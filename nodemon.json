@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts,js",
+  "ignore": ["src/**/*.test.ts", "cjs/*"],
+  "exec": "NODE_ENV=development ts-node -r dotenv/config src/run.ts"
+}
