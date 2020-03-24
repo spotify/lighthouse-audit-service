@@ -1,0 +1,29 @@
+{
+  "name": "lighthouse-audit-service",
+  "description": "@@CHANGE THIS@@",
+  "author": "@@CHANGE THIS@@",
+  "repository": "@@CHANGE THIS@@",
+  "version": "1.0.0",
+  "private": true,
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types",
+  "scripts": {
+    "lint": "web-scripts lint",
+    "test": "web-scripts test",
+    "build": "web-scripts build",
+    "commit": "web-scripts commit",
+    "release": "web-scripts release",
+    "prepare": "web-scripts audit"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "web-scripts commitmsg",
+      "pre-commit": "web-scripts precommit"
+    }
+  },
+  "devDependencies": {
+    "@spotify/web-scripts": "^6.1.0",
+    "husky": "^4.0.0"
+  }
+}
