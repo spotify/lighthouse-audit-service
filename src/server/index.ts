@@ -1,19 +1,36 @@
 import express, { Application } from 'express';
 import morgan from 'morgan';
-import { Logger } from 'winston';
 import { Server } from 'http';
+
+import logger from '../logger';
+import {
+  getDbConnection,
+  runDbMigrations,
+  awaitDbConnection,
+  DbConnectionType,
+} from '../db';
 
 const DEFAULT_PORT = 3003;
 
-import defaultLogger from '../logger';
-
 export interface LighthouseAuditServiceOptions {
   port?: number;
-  logger?: Logger;
 }
 
-function configureRoutes(app: Application, logger: Logger) {
+function configureRoutes(app: Application) {
   logger.debug('attaching routes...');
+  app.get('/_ping', (_req, res) => res.sendStatus(200));
+}
+
+export async function getApp(
+  dbConnection: DbConnectionType = getDbConnection(),
+): Promise<Application> {
+  logger.debug('building express app...');
+
+  await awaitDbConnection(dbConnection);
+  await runDbMigrations(dbConnection);
+
+  const app = express();
+
   app.use(
     morgan('combined', {
       stream: {
@@ -23,21 +40,17 @@ function configureRoutes(app: Application, logger: Logger) {
       },
     }),
   );
-  app.get('/_ping', (_req, res) => res.sendStatus(200));
-}
 
-export function getApp(logger: Logger = defaultLogger): Application {
-  logger.debug('building express app...');
-  const app = express();
-  configureRoutes(app, logger);
+  configureRoutes(app);
+
   return app;
 }
 
 export default async function startServer({
   port = DEFAULT_PORT,
-  logger = defaultLogger,
 }: LighthouseAuditServiceOptions = {}): Promise<Server> {
-  const app = getApp();
+  const dbConnection = getDbConnection();
+  const app = await getApp(dbConnection);
 
   logger.debug('starting application server...');
   return await new Promise((resolve, reject) => {
@@ -49,5 +62,7 @@ export default async function startServer({
       logger.info(`listening on port ${port}`);
       resolve(server);
     });
+
+    server.on('close', () => dbConnection.end());
   });
 }

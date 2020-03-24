@@ -1,6 +1,6 @@
-import winston from 'winston';
+import winston, { Logger } from 'winston';
 
-const logger = winston.createLogger({
+let logger: Logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format:
     process.env.NODE_ENV === 'production'
@@ -19,6 +19,10 @@ if (process.env.NODE_ENV === 'production') {
     new winston.transports.File({ filename: 'error.log', level: 'error' }),
   );
   logger.add(new winston.transports.File({ filename: 'combined.log' }));
+}
+
+export function setLogger(newLogger: Logger) {
+  logger = newLogger;
 }
 
 export default logger;
