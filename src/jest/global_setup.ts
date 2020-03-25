@@ -1,8 +1,9 @@
 import { Duration, TemporalUnit } from 'node-duration';
 import { GenericContainer, Wait, StartedTestContainer } from 'testcontainers';
-import logger from '../logger';
+import { Pool } from 'pg';
 
-import { awaitDbConnection, getDbConnection } from '../db';
+import logger from '../logger';
+import { awaitDbConnection } from '../db';
 import globalTeardown from './global_teardown';
 
 export interface GlobalWithPostgres extends NodeJS.Global {
@@ -44,8 +45,8 @@ export default async () => {
   process.env.PGHOST = container.getContainerIpAddress();
   process.env.PGPORT = `${container.getMappedPort(5432)}`;
 
-  const dbConnection = getDbConnection();
-  await awaitDbConnection(dbConnection);
+  const conn = new Pool();
+  await awaitDbConnection(conn);
 
   dbGlobal.__POSTGRES__ = container;
 };

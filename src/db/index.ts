@@ -12,9 +12,7 @@ export function getDbConnection(): DbConnectionType {
   return pool;
 }
 
-export async function runDbMigrations(
-  dbConnection: DbConnectionType,
-): Promise<void> {
+export async function runDbMigrations(conn: DbConnectionType): Promise<void> {
   logger.info('running db migrations...');
   const files = fs.readdirSync(path.join(__dirname, 'migrations')).sort();
   for (const file of files) {
@@ -22,7 +20,7 @@ export async function runDbMigrations(
     const sql = fs
       .readFileSync(path.join(__dirname, 'migrations', file))
       .toString();
-    await dbConnection.query(sql);
+    await conn.query(sql);
   }
 }
 

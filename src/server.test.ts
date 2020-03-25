@@ -3,7 +3,7 @@ import { Server } from 'http';
 import request from 'supertest';
 import getPort from 'get-port';
 
-import startServer from '.';
+import startServer from './server';
 
 describe('server scaffolding', () => {
   let server: Server;
