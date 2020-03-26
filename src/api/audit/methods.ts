@@ -3,7 +3,14 @@ import waitOn from 'wait-on';
 import puppeteer from 'puppeteer';
 
 import { Audit } from './models';
-import { persistAudit, retrieveAuditById, deleteAuditById } from './db';
+import {
+  persistAudit,
+  retrieveAuditById,
+  retrieveAuditList,
+  deleteAuditById,
+  AuditListOptions,
+  retrieveAuditCount,
+} from './db';
 import parentLogger from '../../logger';
 import { DbConnectionType } from '../../db';
 import { InvalidRequestError } from '../../errors';
@@ -149,6 +156,16 @@ export async function getAudit(
   conn: DbConnectionType,
 ): Promise<Audit> {
   return await retrieveAuditById(auditId, conn);
+}
+
+export async function getAudits(
+  options: AuditListOptions,
+  conn: DbConnectionType,
+): Promise<[Audit[], number]> {
+  return await Promise.all([
+    retrieveAuditList(options, conn),
+    retrieveAuditCount(conn),
+  ]);
 }
 
 export async function deleteAudit(
