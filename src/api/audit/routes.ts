@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+// @ts-ignore
+import ReportGenerator from 'lighthouse/lighthouse-core/report/report-generator';
 
 import logger from '../../logger';
 import { DbConnectionType } from '../../db';
@@ -30,9 +32,18 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
 
   router.get(
     '/v1/audits/:auditId',
-    async (req: Request<{ auditId: string }>, res: Response<AuditBody>) => {
+    async (
+      req: Request<{ auditId: string }>,
+      res: Response<AuditBody | string>,
+    ) => {
       const audit = await getAudit(req.params.auditId, conn);
-      res.status(200).json(audit.body);
+      if (req.header('Accept') === 'application/json') {
+        res.json(audit.body);
+      } else {
+        const html = ReportGenerator.generateReportHtml(audit.report);
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+      }
     },
   );
 
@@ -40,7 +51,7 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
     '/v1/audits/:auditId',
     async (req: Request<{ auditId: string }>, res: Response<AuditBody>) => {
       const audit = await deleteAudit(req.params.auditId, conn);
-      res.status(200).json(audit.body);
+      res.json(audit.body);
     },
   );
 }

@@ -166,6 +166,19 @@ describe('audit routes', () => {
           expect(res.body.id).toEqual(audit.id);
         });
     });
+
+    describe('when html is requested', () => {
+      it('returns the html-rendered lighthouse report', async () => {
+        await request(app)
+          .get(`/v1/audits/${audit.id}`)
+          .set('Accept', 'text/html')
+          .expect('Content-Type', /html/)
+          .expect(200)
+          .then(res => {
+            expect(res.text).toContain('<!doctype html>');
+          });
+      });
+    });
   });
 
   describe('DELETE /v1/audits/:auditId', () => {

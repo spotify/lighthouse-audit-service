@@ -10,6 +10,7 @@ import { InvalidRequestError } from '../../errors';
 
 const DEFAULT_UP_TIMEOUT = 180000;
 const DEFAULT_CHROME_PORT = 9222;
+const DEFAULT_CHROME_PATH = process.env.CHROME_PATH;
 
 const HTTP_RE = /^https?:\/\//;
 
@@ -74,7 +75,7 @@ async function runAudit(
   const {
     upTimeout = DEFAULT_UP_TIMEOUT,
     chromePort = DEFAULT_CHROME_PORT,
-    chromePath,
+    chromePath = DEFAULT_CHROME_PATH,
     lighthouseConfig = {},
   } = options;
 
