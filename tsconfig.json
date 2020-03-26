@@ -1,5 +1,8 @@
 {
   "extends": "@spotify/web-scripts/config/tsconfig.json",
   "include": ["src"],
-  "exclude": ["src/jest", "src/**/*.test.ts"]
+  "exclude": ["src/jest", "src/**/*.test.ts"],
+  "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./src/@types"]
+  }
 }
