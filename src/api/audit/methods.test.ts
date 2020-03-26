@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { Pool } from 'pg';
+import { SQL } from 'sql-template-strings';
 
 import { awaitDbConnection, runDbMigrations } from '../../db';
-import { triggerAudit } from './methods';
-import { AuditStatus } from './models';
-import { SQL } from 'sql-template-strings';
+import { triggerAudit, getAudit } from './methods';
+import { Audit, AuditStatus } from './models';
+import { persistAudit } from './db';
 import { InvalidRequestError } from '../../errors';
 
 async function wait(ms: number = 0): Promise<void> {
@@ -197,6 +198,14 @@ describe('audit methods', () => {
         });
         expect(audit.status).toBe(AuditStatus.FAILED);
       });
+    });
+  });
+
+  describe('#getAudit', () => {
+    it('returns the retrieved audit', async () => {
+      const audit = Audit.buildForUrl('https://spotify.com');
+      await persistAudit(audit, conn);
+      await expect(getAudit(audit.id, conn)).resolves.toMatchObject(audit);
     });
   });
 });

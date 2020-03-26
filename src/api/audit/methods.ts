@@ -3,7 +3,7 @@ import waitOn from 'wait-on';
 import puppeteer from 'puppeteer';
 
 import { Audit } from './models';
-import { persistAudit } from './db';
+import { persistAudit, retrieveAuditById } from './db';
 import parentLogger from '../../logger';
 import { DbConnectionType } from '../../db';
 import { InvalidRequestError } from '../../errors';
@@ -45,14 +45,14 @@ export async function triggerAudit(
     );
 
   const audit = Audit.buildForUrl(url);
-  await persistAudit(conn, audit);
+  await persistAudit(audit, conn);
 
   if (options.awaitAuditCompleted) {
     await runAudit(audit, options);
-    await persistAudit(conn, audit);
+    await persistAudit(audit, conn);
   } else {
     // run in background
-    runAudit(audit, options).then(() => persistAudit(conn, audit));
+    runAudit(audit, options).then(() => persistAudit(audit, conn));
   }
 
   return audit;
@@ -74,7 +74,7 @@ async function runAudit(
   const {
     upTimeout = DEFAULT_UP_TIMEOUT,
     chromePort = DEFAULT_CHROME_PORT,
-    chromePath = process.env.CHROME_PATH,
+    chromePath,
     lighthouseConfig = {},
   } = options;
 
@@ -141,4 +141,11 @@ async function runAudit(
   }
 
   return audit;
+}
+
+export async function getAudit(
+  auditId: string,
+  conn: DbConnectionType,
+): Promise<Audit> {
+  return await retrieveAuditById(auditId, conn);
 }

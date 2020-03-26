@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
 
 import parentLogger from '../../logger';
+import { AuditRow } from './db';
 
 export interface AuditParams {
   id: string;
@@ -37,6 +38,16 @@ export class Audit {
     const id = uuid();
     const timeCreated = new Date();
     return Audit.build({ id, url, timeCreated });
+  }
+
+  static buildForDbRow(row: AuditRow): Audit {
+    return Audit.build({
+      id: row.id,
+      url: row.url,
+      timeCreated: row.time_created,
+      timeCompleted: row.time_completed || undefined,
+      report: row.report_json || undefined,
+    });
   }
 
   constructor(
