@@ -12,10 +12,10 @@ import morgan from 'morgan';
 import { Server } from 'http';
 import { Pool } from 'pg';
 
-import logger from './logger';
-import { runDbMigrations, awaitDbConnection, DbConnectionType } from './db';
-import { bindRoutes as bindAuditRoutes } from './api/audit';
-import { StatusCodeError } from './errors';
+import logger from '../logger';
+import { runDbMigrations, awaitDbConnection, DbConnectionType } from '../db';
+import { bindRoutes as bindAuditRoutes } from '../api/audit';
+import { StatusCodeError } from '../errors';
 
 const DEFAULT_PORT = 3003;
 
