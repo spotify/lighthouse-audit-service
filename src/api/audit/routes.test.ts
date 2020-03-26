@@ -167,4 +167,46 @@ describe('audit routes', () => {
         });
     });
   });
+
+  describe('DELETE /v1/audits/:auditId', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com').updateWithReport(
+        JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+      );
+      methods.deleteAudit.mockResolvedValueOnce(audit);
+    });
+
+    it('deletes the audit', async () => {
+      await request(app)
+        .delete(`/v1/audits/${audit.id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(() => {
+          expect(methods.deleteAudit).toHaveBeenCalledWith(audit.id, conn);
+        });
+    });
+
+    it('returns the audit', async () => {
+      await request(app)
+        .delete(`/v1/audits/${audit.id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(res.body.url).toBe('https://spotify.com');
+          expect(res.body.status).toBe('COMPLETED');
+          expect(res.body.report).toEqual(audit.report);
+          expect(res.body.timeCreated).toEqual(
+            audit.timeCreated?.toISOString(),
+          );
+          expect(res.body.timeCompleted).toEqual(
+            audit.timeCompleted?.toISOString(),
+          );
+          expect(res.body.id).toEqual(audit.id);
+        });
+    });
+  });
 });

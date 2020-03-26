@@ -5,7 +5,7 @@ import { Pool } from 'pg';
 import { v4 as uuid } from 'uuid';
 
 import { awaitDbConnection, runDbMigrations } from '../../db';
-import { persistAudit, retrieveAuditById } from './db';
+import { persistAudit, retrieveAuditById, deleteAuditById } from './db';
 import { Audit } from './models';
 import { NotFoundError } from '../../errors';
 
@@ -98,6 +98,41 @@ describe('audit db methods', () => {
     describe('when id doesnt exist', () => {
       it('throws a NotFoundError', async () => {
         await expect(retrieveAuditById(uuid(), conn)).rejects.toThrowError(
+          NotFoundError,
+        );
+      });
+    });
+  });
+
+  describe('#deleteAuditById', () => {
+    let audit: Audit;
+
+    beforeEach(async () => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      await persistAudit(audit, conn);
+    });
+
+    it('deletes the audit for from the db', async () => {
+      await expect(retrieveAuditById(audit.id, conn)).resolves.toBeInstanceOf(
+        Audit,
+      );
+      await deleteAuditById(audit.id, conn);
+      await expect(retrieveAuditById(audit.id, conn)).rejects.toThrowError(
+        NotFoundError,
+      );
+    });
+
+    it('returns the audit', async () => {
+      const retrieivedAudit = await deleteAuditById(audit.id, conn);
+      expect(retrieivedAudit.url).toBe(audit.url);
+      expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
+      expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
+      expect(retrieivedAudit.report).toEqual(audit.report);
+    });
+
+    describe('when id doesnt exist', () => {
+      it('throws a NotFoundError', async () => {
+        await expect(deleteAuditById(uuid(), conn)).rejects.toThrowError(
           NotFoundError,
         );
       });
