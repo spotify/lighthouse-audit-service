@@ -78,12 +78,14 @@ export class Audit {
     };
   }
 
-  updateWithReport(report: LHR) {
+  updateWithReport(report: LHR): Audit {
     this.report = report;
     this.markCompleted();
+    return this;
   }
 
-  markCompleted() {
+  markCompleted(): Audit {
     this.timeCompleted = new Date();
+    return this;
   }
 }

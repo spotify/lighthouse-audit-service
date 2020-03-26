@@ -25,7 +25,7 @@ export interface LighthouseAuditServiceOptions {
 
 function configureMiddleware(app: Application) {
   app.use(compression());
-  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.json());
   app.use(
     morgan('combined', {
       stream: {
@@ -37,7 +37,7 @@ function configureMiddleware(app: Application) {
   );
 }
 
-function configureErrorMiddleware(app: Application) {
+export function configureErrorMiddleware(app: Application) {
   app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
     if (err instanceof StatusCodeError) res.status(err.statusCode);
     next(err);

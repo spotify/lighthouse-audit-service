@@ -6,6 +6,7 @@ import { awaitDbConnection, runDbMigrations } from '../../db';
 import { triggerAudit } from './methods';
 import { AuditStatus } from './models';
 import { SQL } from 'sql-template-strings';
+import { InvalidRequestError } from '../../errors';
 
 async function wait(ms: number = 0): Promise<void> {
   await new Promise(r => setTimeout(r, ms));
@@ -135,6 +136,23 @@ describe('audit methods', () => {
           SQL`SELECT id FROM lighthouse_audits WHERE id = ${audit.id} AND report_json IS NOT NULL`,
         );
         expect(res.rows).toHaveLength(1);
+      });
+    });
+
+    describe('when no url is provided', () => {
+      it('throws an InvalidRequestError', async () => {
+        // @ts-ignore
+        await expect(triggerAudit(null, conn)).rejects.toThrowError(
+          InvalidRequestError,
+        );
+      });
+    });
+
+    describe('when url does not contain protocol', () => {
+      it('throws an InvalidRequestError', async () => {
+        await expect(
+          triggerAudit('www.spotify.com', conn),
+        ).rejects.toThrowError(InvalidRequestError);
       });
     });
 

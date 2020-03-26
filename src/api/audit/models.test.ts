@@ -3,6 +3,8 @@ import path from 'path';
 
 import { Audit, AuditStatus } from './models';
 
+const UUID_RE = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
 const LIGHTHOUSE_REPORT_FIXTURE = fs
   .readFileSync(path.join(__dirname, '__fixtures__', 'lighthouse-report.json'))
   .toString();
@@ -41,11 +43,7 @@ describe('audit models', () => {
   describe('Audit.buildForUrl', () => {
     it('creates a uuid and timeCreated', () => {
       const audit = Audit.buildForUrl('https://spotify.com');
-      expect(audit.id).toEqual(
-        expect.stringMatching(
-          /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-        ),
-      );
+      expect(audit.id).toMatch(UUID_RE);
       expect(audit.url).toMatchInlineSnapshot(`"https://spotify.com"`);
       expect(audit.timeCreated).toBeDefined();
       expect(audit.timeCompleted).toBeUndefined();
