@@ -136,4 +136,35 @@ describe('audit routes', () => {
       /* eslint-enable jest/expect-expect */
     });
   });
+
+  describe('GET /v1/audits/:auditId', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com').updateWithReport(
+        JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+      );
+      methods.getAudit.mockResolvedValueOnce(audit);
+    });
+
+    it('returns the audit', async () => {
+      await request(app)
+        .get(`/v1/audits/${audit.id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(res.body.url).toBe('https://spotify.com');
+          expect(res.body.status).toBe('COMPLETED');
+          expect(res.body.report).toEqual(audit.report);
+          expect(res.body.timeCreated).toEqual(
+            audit.timeCreated?.toISOString(),
+          );
+          expect(res.body.timeCompleted).toEqual(
+            audit.timeCompleted?.toISOString(),
+          );
+          expect(res.body.id).toEqual(audit.id);
+        });
+    });
+  });
 });

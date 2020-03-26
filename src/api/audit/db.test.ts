@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import SQL from 'sql-template-strings';
 import { Pool } from 'pg';
+import { v4 as uuid } from 'uuid';
 
 import { awaitDbConnection, runDbMigrations } from '../../db';
-import { persistAudit } from './db';
+import { persistAudit, retrieveAuditById } from './db';
 import { Audit } from './models';
+import { NotFoundError } from '../../errors';
 
 const LIGHTHOUSE_REPORT_FIXTURE = fs
   .readFileSync(path.join(__dirname, '__fixtures__', 'lighthouse-report.json'))
@@ -24,33 +26,81 @@ describe('audit db methods', () => {
     conn.end();
   });
 
-  it('creates a new audit', async () => {
-    const audit = Audit.buildForUrl('https://spotify.com');
-    await persistAudit(conn, audit);
-    const resp = await conn.query(
-      SQL`SELECT url FROM lighthouse_audits WHERE id = ${audit.id}`,
-    );
-    expect(resp.rows[0].url).toBe('https://spotify.com');
+  describe('#persistAudit', () => {
+    it('creates a new audit', async () => {
+      const audit = Audit.buildForUrl('https://spotify.com');
+      await persistAudit(audit, conn);
+      const resp = await conn.query(
+        SQL`SELECT url FROM lighthouse_audits WHERE id = ${audit.id}`,
+      );
+      expect(resp.rows[0].url).toBe('https://spotify.com');
+    });
+
+    it('updates an existing audit', async () => {
+      const audit = Audit.buildForUrl('https://spotify.com');
+      await persistAudit(audit, conn);
+      const resp = await conn.query(
+        SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
+      );
+      expect(resp.rows[0].url).toBe('https://spotify.com');
+      expect(resp.rows[0].report_json).toBeFalsy();
+
+      audit.updateWithReport(JSON.parse(LIGHTHOUSE_REPORT_FIXTURE));
+      await persistAudit(audit, conn);
+      const resp2 = await conn.query(
+        SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
+      );
+      expect(resp2.rows[0].url).toBe('https://spotify.com');
+      expect(resp2.rows[0].report_json).toBeInstanceOf(Object);
+      expect(resp2.rows[0].report_json).toEqual(
+        JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+      );
+    });
   });
 
-  it('updates an existing audit', async () => {
-    const audit = Audit.buildForUrl('https://spotify.com');
-    await persistAudit(conn, audit);
-    const resp = await conn.query(
-      SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
-    );
-    expect(resp.rows[0].url).toBe('https://spotify.com');
-    expect(resp.rows[0].report_json).toBeFalsy();
+  describe('#retrieveAuditById', () => {
+    describe('with null fields', () => {
+      let audit: Audit;
 
-    audit.updateWithReport(JSON.parse(LIGHTHOUSE_REPORT_FIXTURE));
-    await persistAudit(conn, audit);
-    const resp2 = await conn.query(
-      SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
-    );
-    expect(resp2.rows[0].url).toBe('https://spotify.com');
-    expect(resp2.rows[0].report_json).toBeInstanceOf(Object);
-    expect(resp2.rows[0].report_json).toEqual(
-      JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
-    );
+      beforeEach(async () => {
+        audit = Audit.buildForUrl('https://spotify.com');
+        await persistAudit(audit, conn);
+      });
+
+      it('returns an audit for the id', async () => {
+        const retrieivedAudit = await retrieveAuditById(audit.id, conn);
+        expect(retrieivedAudit.url).toBe(audit.url);
+        expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
+        expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
+        expect(retrieivedAudit.report).toEqual(audit.report);
+      });
+    });
+
+    describe('when a report is set', () => {
+      let audit: Audit;
+
+      beforeEach(async () => {
+        audit = Audit.buildForUrl('https://spotify.com').updateWithReport(
+          JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+        );
+        await persistAudit(audit, conn);
+      });
+
+      it('returns an audit for the id', async () => {
+        const retrieivedAudit = await retrieveAuditById(audit.id, conn);
+        expect(retrieivedAudit.url).toBe(audit.url);
+        expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
+        expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
+        expect(retrieivedAudit.report).toEqual(audit.report);
+      });
+    });
+
+    describe('when id doesnt exist', () => {
+      it('throws a NotFoundError', async () => {
+        await expect(retrieveAuditById(uuid(), conn)).rejects.toThrowError(
+          NotFoundError,
+        );
+      });
+    });
   });
 });

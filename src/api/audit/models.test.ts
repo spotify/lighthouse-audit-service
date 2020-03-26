@@ -51,6 +51,23 @@ describe('audit models', () => {
     });
   });
 
+  describe('Audit.buildForDbRow', () => {
+    it('creates a uuid and timeCreated', () => {
+      const audit = Audit.buildForDbRow({
+        id: 'foo',
+        url: 'https://spotify.com',
+        time_created: new Date(),
+        time_completed: new Date(),
+        report_json: JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+      });
+      expect(audit.id).toBe('foo');
+      expect(audit.url).toMatchInlineSnapshot(`"https://spotify.com"`);
+      expect(audit.timeCreated).toBeDefined();
+      expect(audit.timeCompleted).toBeDefined();
+      expect(audit.report).toBeInstanceOf(Object);
+    });
+  });
+
   describe('audit.reportJson', () => {
     it('converts the report into a JSON string', () => {
       const audit = Audit.build({
