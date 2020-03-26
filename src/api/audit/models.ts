@@ -13,7 +13,20 @@ export interface AuditParams {
   report?: LHR;
 }
 
-export interface AuditBody extends AuditParams {
+export interface AuditBody {
+  id: string;
+  url: string;
+  timeCreated: Date;
+  timeCompleted?: Date;
+  report?: LHR;
+  status: AuditStatus;
+}
+
+export interface AuditListItem {
+  id: string;
+  url: string;
+  timeCreated: Date;
+  timeCompleted?: Date;
   status: AuditStatus;
 }
 
@@ -85,6 +98,16 @@ export class Audit {
       timeCreated: this.timeCreated,
       timeCompleted: this.timeCompleted,
       report: this.report,
+      status: this.status,
+    };
+  }
+
+  get listItem(): AuditListItem {
+    return {
+      id: this.id,
+      url: this.url,
+      timeCreated: this.timeCreated,
+      timeCompleted: this.timeCompleted,
       status: this.status,
     };
   }

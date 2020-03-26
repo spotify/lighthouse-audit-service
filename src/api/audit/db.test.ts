@@ -4,8 +4,13 @@ import SQL from 'sql-template-strings';
 import { Pool } from 'pg';
 import { v4 as uuid } from 'uuid';
 
-import { awaitDbConnection, runDbMigrations } from '../../db';
-import { persistAudit, retrieveAuditById, deleteAuditById } from './db';
+import {
+  persistAudit,
+  retrieveAuditById,
+  deleteAuditById,
+  retrieveAuditList,
+  retrieveAuditCount,
+} from './db';
 import { Audit } from './models';
 import { NotFoundError } from '../../errors';
 
@@ -13,20 +18,34 @@ const LIGHTHOUSE_REPORT_FIXTURE = fs
   .readFileSync(path.join(__dirname, '__fixtures__', 'lighthouse-report.json'))
   .toString();
 
+async function wait(ms: number = 0): Promise<void> {
+  await new Promise(r => setTimeout(r, ms));
+}
+
 describe('audit db methods', () => {
   let conn: Pool;
 
-  beforeEach(async () => {
+  beforeAll(() => {
     conn = new Pool();
-    await awaitDbConnection(conn);
-    await runDbMigrations(conn);
   });
 
-  afterEach(() => {
+  beforeEach(async () => {
+    await conn.query(SQL`BEGIN;`);
+  });
+
+  afterEach(async () => {
+    await conn.query(SQL`ROLLBACK;`);
+  });
+
+  afterAll(() => {
     conn.end();
   });
 
   describe('#persistAudit', () => {
+    afterEach(async () => {
+      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+    });
+
     it('creates a new audit', async () => {
       const audit = Audit.buildForUrl('https://spotify.com');
       await persistAudit(audit, conn);
@@ -100,6 +119,108 @@ describe('audit db methods', () => {
         await expect(retrieveAuditById(uuid(), conn)).rejects.toThrowError(
           NotFoundError,
         );
+      });
+    });
+  });
+
+  describe('#retrieveAuditList', () => {
+    beforeEach(async () => {
+      const first = persistAudit(
+        Audit.buildForUrl('https://spotify.com/se'),
+        conn,
+      );
+      await wait(10);
+      const middle = persistAudit(
+        Audit.buildForUrl('https://spotify.com/gb'),
+        conn,
+      );
+      await wait(10);
+      const last = persistAudit(
+        Audit.buildForUrl('https://spotify.com/en'),
+        conn,
+      );
+      await Promise.all([first, middle, last]);
+
+      await conn.query(SQL`COMMIT;`);
+    });
+
+    afterEach(async () => {
+      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+      await wait();
+    });
+
+    it('returns the list of Audits', async () => {
+      const audits = await retrieveAuditList({}, conn);
+      expect(audits).toHaveLength(3);
+      expect(audits[0]).toBeInstanceOf(Audit);
+    });
+
+    describe('when limit and offset are applied', () => {
+      it('correctly filters the data', async () => {
+        const audits = await retrieveAuditList({ limit: 1 }, conn);
+        expect(audits).toHaveLength(1);
+        expect(audits[0].url).toBe('https://spotify.com/en');
+      });
+
+      it('correctly offsets the data', async () => {
+        const audits = await retrieveAuditList({ limit: 1, offset: 1 }, conn);
+        expect(audits).toHaveLength(1);
+        expect(audits[0].url).toBe('https://spotify.com/gb');
+      });
+
+      it('correctly returns when you page past the data', async () => {
+        const audits = await retrieveAuditList({ limit: 1, offset: 5 }, conn);
+        expect(audits).toHaveLength(0);
+      });
+    });
+
+    describe('when no rows are in the db', () => {
+      beforeEach(async () => {
+        await conn.query(SQL`DELETE FROM lighthouse_audits`);
+      });
+
+      it('returns correctly', async () => {
+        const audits = await retrieveAuditList({}, conn);
+        expect(audits).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('#retrieveAuditCount', () => {
+    beforeEach(async () => {
+      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+
+      const first = persistAudit(
+        Audit.buildForUrl('https://spotify.com/se'),
+        conn,
+      );
+      const middle = persistAudit(
+        Audit.buildForUrl('https://spotify.com/gb'),
+        conn,
+      );
+      const last = persistAudit(
+        Audit.buildForUrl('https://spotify.com/en'),
+        conn,
+      );
+      await Promise.all([first, middle, last]);
+      await conn.query(SQL`COMMIT;`);
+    });
+
+    afterEach(async () => {
+      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+    });
+
+    it('returns the count', async () => {
+      await expect(retrieveAuditCount(conn)).resolves.toBe(3);
+    });
+
+    describe('when there are no entries', () => {
+      beforeEach(async () => {
+        await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+      });
+
+      it('returns zero', async () => {
+        await expect(retrieveAuditCount(conn)).resolves.toBe(0);
       });
     });
   });

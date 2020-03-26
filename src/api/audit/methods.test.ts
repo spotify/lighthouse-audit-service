@@ -3,15 +3,15 @@ import path from 'path';
 import { Pool } from 'pg';
 import { SQL } from 'sql-template-strings';
 
-import { awaitDbConnection, runDbMigrations } from '../../db';
-import { triggerAudit, getAudit, deleteAudit } from './methods';
+import { triggerAudit, getAudit, getAudits, deleteAudit } from './methods';
 import { Audit, AuditStatus } from './models';
-import { persistAudit } from './db';
 import { InvalidRequestError } from '../../errors';
 
 async function wait(ms: number = 0): Promise<void> {
   await new Promise(r => setTimeout(r, ms));
 }
+
+jest.mock('./db');
 
 jest.mock('lighthouse', () => {
   const LIGHTHOUSE_REPORT_FIXTURE = fs
@@ -37,25 +37,40 @@ const lighthouse = require.requireMock('lighthouse');
 const puppeteer = require.requireMock('puppeteer');
 const waitOn = require.requireMock('wait-on');
 
+const db = require.requireMock('./db');
+
 describe('audit methods', () => {
   let conn: Pool;
 
-  beforeEach(async () => {
+  beforeAll(() => {
     conn = new Pool();
-    await awaitDbConnection(conn);
-    await runDbMigrations(conn);
+  });
+
+  beforeEach(async () => {
+    await conn.query(SQL`BEGIN;`);
   });
 
   afterEach(async () => {
     // wait for the next tick to allow "background" persists to clear
     await wait();
-    conn.end();
+    await conn.query(SQL`ROLLBACK;`);
+
     lighthouse.mockClear();
     puppeteer.launch.mockClear();
     waitOn.mockClear();
   });
 
+  afterAll(() => {
+    conn.end();
+  });
+
   describe('#triggerAudit', () => {
+    // ensure that we wait for any background writes that are still occurring wrap up
+    // so that they don't infect other tests.
+    afterEach(async () => {
+      await wait(100);
+    });
+
     it('returns a started audit', async () => {
       const audit = await triggerAudit('https://spotify.com', conn);
       expect(audit.status).toBe(AuditStatus.RUNNING);
@@ -75,10 +90,7 @@ describe('audit methods', () => {
 
     it('persists the triggered audit', async () => {
       const audit = await triggerAudit('https://spotify.com', conn);
-      const res = await conn.query(
-        SQL`SELECT * FROM lighthouse_audits WHERE id = ${audit.id}`,
-      );
-      expect(res.rows[0].url).toBe('https://spotify.com');
+      expect(db.persistAudit).toHaveBeenCalledWith(audit, conn);
     });
 
     describe('when using options', () => {
@@ -133,10 +145,7 @@ describe('audit methods', () => {
         const audit = await triggerAudit('https://spotify.com', conn, {
           awaitAuditCompleted: true,
         });
-        const res = await conn.query(
-          SQL`SELECT id FROM lighthouse_audits WHERE id = ${audit.id} AND report_json IS NOT NULL`,
-        );
-        expect(res.rows).toHaveLength(1);
+        expect(db.persistAudit).toHaveBeenCalledWith(audit, conn);
       });
     });
 
@@ -202,17 +211,41 @@ describe('audit methods', () => {
   });
 
   describe('#getAudit', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      db.retrieveAuditById.mockResolvedValueOnce(audit);
+    });
+
     it('returns the retrieved audit', async () => {
-      const audit = Audit.buildForUrl('https://spotify.com');
-      await persistAudit(audit, conn);
       await expect(getAudit(audit.id, conn)).resolves.toMatchObject(audit);
     });
   });
 
+  describe('#getAuditList', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      db.retrieveAuditList.mockResolvedValueOnce([audit]);
+      db.retrieveAuditCount.mockResolvedValueOnce(1);
+    });
+
+    it('returns the audit list and count', async () => {
+      await expect(getAudits({}, conn)).resolves.toEqual([[audit], 1]);
+    });
+  });
+
   describe('#deleteAudit', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      db.deleteAuditById.mockResolvedValueOnce(audit);
+    });
+
     it('returns the deleted audit', async () => {
-      const audit = Audit.buildForUrl('https://spotify.com');
-      await persistAudit(audit, conn);
       await expect(deleteAudit(audit.id, conn)).resolves.toMatchObject(audit);
     });
   });

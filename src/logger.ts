@@ -11,7 +11,12 @@ let logger: Logger = winston.createLogger({
           winston.format.simple(),
         ),
   defaultMeta: { service: 'lighthouse-audit-service' },
-  transports: [new winston.transports.Console()],
+  transports: [
+    new winston.transports.Console({
+      silent:
+        process.env.JEST_WORKER_ID !== undefined && !process.env.LOG_LEVEL,
+    }),
+  ],
 });
 
 if (process.env.NODE_ENV === 'production') {

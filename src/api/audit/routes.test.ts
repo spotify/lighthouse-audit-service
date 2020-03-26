@@ -9,7 +9,6 @@ import expressPromiseRouter from 'express-promise-router';
 import { bindRoutes } from './routes';
 import { Audit } from './models';
 import { configureErrorMiddleware } from '../../server';
-import { awaitDbConnection, runDbMigrations } from '../../db';
 import { InvalidRequestError } from '../../errors';
 
 const UUID_RE = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
@@ -27,10 +26,12 @@ describe('audit routes', () => {
   let conn: Pool;
   let app: Application;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     conn = new Pool();
-    await awaitDbConnection(conn);
-    await runDbMigrations(conn);
+  });
+
+  beforeEach(async () => {
+    await conn.query('BEGIN;');
 
     app = express();
     app.use(bodyParser.json());
@@ -40,7 +41,11 @@ describe('audit routes', () => {
     configureErrorMiddleware(app);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await conn.query('ROLLBACK;');
+  });
+
+  afterAll(() => {
     conn.end();
   });
 
@@ -61,7 +66,6 @@ describe('audit routes', () => {
       const payload = { url: 'https://spotify.com' };
       await request(app)
         .post('/v1/audits')
-        .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
         .send(payload)
         .expect('Content-Type', /json/)
@@ -82,7 +86,6 @@ describe('audit routes', () => {
       };
       await request(app)
         .post('/v1/audits')
-        .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
         .send(payload)
         .expect('Content-Type', /json/)
@@ -101,7 +104,6 @@ describe('audit routes', () => {
       };
       await request(app)
         .post('/v1/audits')
-        .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
         .send(payload)
         .expect('Content-Type', /json/)
@@ -128,9 +130,78 @@ describe('audit routes', () => {
       it('responds 400', async () => {
         await request(app)
           .post('/v1/audits')
-          .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
           .send({})
+          .expect(400);
+      });
+      /* eslint-enable jest/expect-expect */
+    });
+  });
+
+  describe('GET /v1/audits', () => {
+    let audits: Audit[];
+    beforeEach(() => {
+      audits = [
+        Audit.buildForUrl('https://spotify.com'),
+        Audit.buildForUrl('https://spotify.com'),
+        Audit.buildForUrl('https://spotify.com'),
+      ];
+
+      methods.getAudits.mockResolvedValueOnce([audits, audits.length]);
+    });
+
+    it('returns the correct payload', async () => {
+      await request(app)
+        .get('/v1/audits')
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(res.body.audits[0].url).toBe(audits[0].url);
+          expect(res.body.audits[0].report).toBeUndefined();
+          expect(res.body.total).toBe(audits.length);
+          expect(res.body.limit).toBe(25);
+          expect(res.body.offset).toBe(0);
+        });
+    });
+
+    it('allows limit and offset overrides', async () => {
+      await request(app)
+        .get('/v1/audits')
+        .query({ limit: '5', offset: '5' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(methods.getAudits).toHaveBeenCalledWith(
+            { limit: 5, offset: 5 },
+            conn,
+          );
+          expect(res.body.limit).toBe(5);
+          expect(res.body.offset).toBe(5);
+        });
+    });
+
+    /* eslint-disable jest/expect-expect */
+    describe('when invalid value is provided for limit', () => {
+      /* eslint-disable jest/expect-expect */
+      it('rejects 400', async () => {
+        await request(app)
+          .get('/v1/audits')
+          .query({ limit: 'boop' })
+          .set('Accept', 'application/json')
+          .expect(400);
+      });
+      /* eslint-enable jest/expect-expect */
+    });
+
+    describe('when invalid value is provided for offset', () => {
+      /* eslint-disable jest/expect-expect */
+      it('rejects 400', async () => {
+        await request(app)
+          .get('/v1/audits')
+          .query({ offset: 'boop' })
+          .set('Accept', 'application/json')
           .expect(400);
       });
       /* eslint-enable jest/expect-expect */

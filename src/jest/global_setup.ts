@@ -3,7 +3,7 @@ import { GenericContainer, Wait, StartedTestContainer } from 'testcontainers';
 import { Pool } from 'pg';
 
 import logger from '../logger';
-import { awaitDbConnection } from '../db';
+import { awaitDbConnection, runDbMigrations } from '../db';
 import globalTeardown from './global_teardown';
 
 export interface GlobalWithPostgres extends NodeJS.Global {
@@ -47,6 +47,8 @@ export default async () => {
 
   const conn = new Pool();
   await awaitDbConnection(conn);
+  await runDbMigrations(conn);
+  conn.end();
 
   dbGlobal.__POSTGRES__ = container;
 };
