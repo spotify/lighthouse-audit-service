@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 import { SQL } from 'sql-template-strings';
 
 import { awaitDbConnection, runDbMigrations } from '../../db';
-import { triggerAudit, getAudit } from './methods';
+import { triggerAudit, getAudit, deleteAudit } from './methods';
 import { Audit, AuditStatus } from './models';
 import { persistAudit } from './db';
 import { InvalidRequestError } from '../../errors';
@@ -206,6 +206,14 @@ describe('audit methods', () => {
       const audit = Audit.buildForUrl('https://spotify.com');
       await persistAudit(audit, conn);
       await expect(getAudit(audit.id, conn)).resolves.toMatchObject(audit);
+    });
+  });
+
+  describe('#deleteAudit', () => {
+    it('returns the deleted audit', async () => {
+      const audit = Audit.buildForUrl('https://spotify.com');
+      await persistAudit(audit, conn);
+      await expect(deleteAudit(audit.id, conn)).resolves.toMatchObject(audit);
     });
   });
 });

@@ -42,7 +42,21 @@ export async function retrieveAuditById(
   conn: DbConnectionType,
 ): Promise<Audit> {
   const res = await conn.query<AuditRow>(SQL`
-    SELECT * FROM lighthouse_audits WHERE id = ${auditId}
+    SELECT * FROM lighthouse_audits WHERE id = ${auditId};
+  `);
+  if (res.rowCount === 0)
+    throw new NotFoundError(`audit not found for id "${auditId}"`);
+  return Audit.buildForDbRow(res.rows[0]);
+}
+
+export async function deleteAuditById(
+  auditId: string,
+  conn: DbConnectionType,
+): Promise<Audit> {
+  const res = await conn.query<AuditRow>(SQL`
+    DELETE FROM lighthouse_audits
+      WHERE lighthouse_audits.id = ${auditId}
+    RETURNING *;
   `);
   if (res.rowCount === 0)
     throw new NotFoundError(`audit not found for id "${auditId}"`);
