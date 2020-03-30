@@ -1,4 +1,5 @@
-import { AuditListItem } from '../audits';
+import { AuditListItem, Audit } from '../audits';
+import { WebsiteRow } from './db';
 
 export interface WebsiteParams {
   url: string;
@@ -7,7 +8,7 @@ export interface WebsiteParams {
 
 export interface WebsiteListItem {
   url: string;
-  timeLastAudited: Date;
+  lastAudit: AuditListItem;
   audits: AuditListItem[];
 }
 
@@ -22,30 +23,24 @@ export class Website {
     return new Website(params.url, params.audits);
   }
 
-  static buildForDbRow() {
-    throw new Error('not implemented');
+  static buildForDbRow(row: WebsiteRow): Website {
+    return Website.build({
+      url: row.url,
+      audits: row.audits_json.map(
+        str => Audit.buildForDbRow(JSON.parse(str)).listItem,
+      ),
+    });
   }
 
-  private _timeLastAudited?: Date;
-  get timeLastAudited(): Date {
-    if (!this._timeLastAudited) {
-      this._timeLastAudited = this.audits.reduce(
-        (res: Date, audit: AuditListItem): Date => {
-          if (audit.timeCreated > res) return audit.timeCreated;
-          return res;
-        },
-        this.audits[0].timeCreated,
-      );
-    }
-
-    return this._timeLastAudited;
+  get lastAudit(): AuditListItem {
+    return this.audits[0];
   }
 
   get listItem(): WebsiteListItem {
     return {
       url: this.url,
-      timeLastAudited: this.timeLastAudited,
       audits: this.audits,
+      lastAudit: this.lastAudit,
     };
   }
 }

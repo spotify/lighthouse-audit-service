@@ -1,13 +1,7 @@
-// import fs from 'fs';
-// import path from 'path';
 import { v4 as uuid } from 'uuid';
 
 import { Website } from './models';
 import { Audit } from '../audits';
-
-// const LIGHTHOUSE_REPORT_FIXTURE = fs
-//   .readFileSync(path.join(__dirname, '__fixtures__', 'lighthouse-report.json'))
-//   .toString();
 
 describe('website models', () => {
   describe('constructor', () => {
@@ -37,30 +31,28 @@ describe('website models', () => {
     });
   });
 
-  describe('website.timeLastAudited', () => {
-    it('returns the max time audited value', () => {
+  describe('website.lastAudit', () => {
+    it('returns the most recent audit (trusts db query)', () => {
       const url = 'https://spotify.com';
       const audits = [
         Audit.build({
           id: uuid(),
           url,
-          timeCreated: new Date('2020-01-01T00:00:00.000Z'),
-        }),
-        Audit.build({
-          id: uuid(),
-          url,
           timeCreated: new Date('2020-03-01T00:00:00.000Z'),
-        }),
+        }).listItem,
         Audit.build({
           id: uuid(),
           url,
           timeCreated: new Date('2020-02-01T00:00:00.000Z'),
-        }),
+        }).listItem,
+        Audit.build({
+          id: uuid(),
+          url,
+          timeCreated: new Date('2020-01-01T00:00:00.000Z'),
+        }).listItem,
       ];
       const website = Website.build({ url, audits });
-      expect(website.timeLastAudited).toEqual(
-        new Date('2020-03-01T00:00:00.000Z'),
-      );
+      expect(website.lastAudit).toBe(audits[0]);
     });
   });
 });
