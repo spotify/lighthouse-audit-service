@@ -3,13 +3,7 @@ import waitOn from 'wait-on';
 import puppeteer from 'puppeteer';
 
 import { Audit, AuditListItem } from './models';
-import {
-  persistAudit,
-  retrieveAuditById,
-  retrieveAuditList,
-  deleteAuditById,
-  retrieveAuditCount,
-} from './db';
+import { persistAudit, retrieveAuditList, retrieveAuditCount } from './db';
 import parentLogger from '../../logger';
 import { DbConnectionType } from '../../db';
 import { InvalidRequestError } from '../../errors';
@@ -20,6 +14,11 @@ const DEFAULT_CHROME_PORT = 9222;
 const DEFAULT_CHROME_PATH = process.env.CHROME_PATH;
 
 const HTTP_RE = /^https?:\/\//;
+
+export {
+  retrieveAuditById as getAudit,
+  deleteAuditById as deleteAudit,
+} from './db';
 
 export interface AuditOptions {
   awaitAuditCompleted?: boolean;
@@ -151,21 +150,7 @@ async function runAudit(
   return audit;
 }
 
-export async function getAudit(
-  conn: DbConnectionType,
-  auditId: string,
-): Promise<Audit> {
-  return await retrieveAuditById(conn, auditId);
-}
-
 export const getAudits = listResponseFactory<AuditListItem>(
   async (...args) => (await retrieveAuditList(...args)).map(a => a.listItem),
   retrieveAuditCount,
 );
-
-export async function deleteAudit(
-  conn: DbConnectionType,
-  auditId: string,
-): Promise<Audit> {
-  return await deleteAuditById(conn, auditId);
-}

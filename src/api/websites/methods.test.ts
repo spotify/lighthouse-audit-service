@@ -3,7 +3,7 @@ import { SQL } from 'sql-template-strings';
 
 import { Audit } from '../audits';
 import { Website } from './models';
-import { getWebsites } from './methods';
+import { getWebsiteByUrl, getWebsiteByAuditId, getWebsites } from './methods';
 
 jest.mock('./db');
 
@@ -28,7 +28,45 @@ describe('audit methods', () => {
     conn.end();
   });
 
-  describe('#getAuditList', () => {
+  describe('#getWebsiteByUrl', () => {
+    let website: Website;
+
+    beforeEach(() => {
+      website = Website.build({
+        url: 'https://spotify.com',
+        audits: [Audit.buildForUrl('https://spotify.com').listItem],
+      });
+      db.retrieveWebsiteByUrl.mockResolvedValueOnce(website);
+    });
+
+    it('returns the retrieved audit', async () => {
+      await expect(
+        getWebsiteByUrl(conn, 'https://spotify.com'),
+      ).resolves.toMatchObject(website);
+    });
+  });
+
+  describe('#getWebsiteByAuditId', () => {
+    let audit: Audit;
+    let website: Website;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      website = Website.build({
+        url: 'https://spotify.com',
+        audits: [audit.listItem],
+      });
+      db.retrieveWebsiteByAuditId.mockResolvedValueOnce(website);
+    });
+
+    it('returns the retrieved audit', async () => {
+      await expect(getWebsiteByAuditId(conn, audit.id)).resolves.toMatchObject(
+        website,
+      );
+    });
+  });
+
+  describe('#getWebsiteList', () => {
     let website: Website;
 
     beforeEach(() => {

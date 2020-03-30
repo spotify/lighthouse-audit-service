@@ -42,12 +42,14 @@ export async function retrieveAuditList(
   conn: DbConnectionType,
   options: ListRequest = {},
 ): Promise<Audit[]> {
-  const res = await conn.query<AuditRow>(
-    addListRequestToQuery(
-      SQL`SELECT * FROM lighthouse_audits ORDER BY time_created DESC`,
-      options,
-    ),
-  );
+  let query = SQL`SELECT * FROM lighthouse_audits`;
+  if (options.where) {
+    query = query.append(SQL`\n`);
+    query = query.append(options.where);
+  }
+  query = query.append(SQL`\nORDER BY time_created DESC`);
+  query = addListRequestToQuery(query, options);
+  const res = await conn.query<AuditRow>(query);
   return res.rows.map(Audit.buildForDbRow);
 }
 
@@ -64,12 +66,12 @@ export async function retrieveAuditById(
   conn: DbConnectionType,
   auditId: string,
 ): Promise<Audit> {
-  const res = await conn.query<AuditRow>(SQL`
-    SELECT * FROM lighthouse_audits WHERE id = ${auditId};
-  `);
-  if (res.rowCount === 0)
+  const res = await retrieveAuditList(conn, {
+    where: SQL`WHERE id = ${auditId}`,
+  });
+  if (res.length === 0)
     throw new NotFoundError(`audit not found for id "${auditId}"`);
-  return Audit.buildForDbRow(res.rows[0]);
+  return res[0];
 }
 
 export async function deleteAuditById(
