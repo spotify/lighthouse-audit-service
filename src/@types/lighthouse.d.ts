@@ -7,12 +7,19 @@ declare module 'lighthouse' {
     configSettings: {
       emulatedFormFactor: string;
     };
-    categories: Record<
-      string,
-      {
-        score: number;
-      }
-    >;
+    categories: Record<string, LighthouseCategory>;
+  }
+  export interface LighthouseCategory {
+    id: string;
+    score: number;
+    title: string;
+    auditRefs: {
+      id: string;
+      group: string;
+      weight: number;
+    }[];
+    description: string;
+    manualDescription: string;
   }
   export interface LighthouseOptions {
     chromeFlags?: string[];

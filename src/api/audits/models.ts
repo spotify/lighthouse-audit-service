@@ -1,4 +1,4 @@
-import { LHR } from 'lighthouse';
+import { LHR, LighthouseCategory } from 'lighthouse';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
 
@@ -28,6 +28,7 @@ export interface AuditListItem {
   timeCreated: Date;
   timeCompleted?: Date;
   status: AuditStatus;
+  categories?: Record<string, LighthouseCategoryAbbr>;
 }
 
 export enum AuditStatus {
@@ -35,6 +36,11 @@ export enum AuditStatus {
   FAILED = 'FAILED',
   COMPLETED = 'COMPLETED',
 }
+
+type LighthouseCategoryAbbr = Pick<
+  LighthouseCategory,
+  'id' | 'title' | 'score'
+>;
 
 export class Audit {
   static build(params: AuditParams): Audit {
@@ -91,6 +97,25 @@ export class Audit {
     }
   }
 
+  get categories(): Record<string, LighthouseCategoryAbbr> | undefined {
+    if (!this.report) return undefined;
+
+    return Object.keys(this.report.categories).reduce(
+      (
+        res: Record<string, LighthouseCategoryAbbr>,
+        key: string,
+      ): Record<string, LighthouseCategoryAbbr> => ({
+        ...res,
+        [key]: {
+          id: (this.report as LHR).categories[key].id,
+          title: (this.report as LHR).categories[key].title,
+          score: (this.report as LHR).categories[key].score,
+        },
+      }),
+      {},
+    );
+  }
+
   get body(): AuditBody {
     return {
       id: this.id,
@@ -109,6 +134,7 @@ export class Audit {
       timeCreated: this.timeCreated,
       timeCompleted: this.timeCompleted,
       status: this.status,
+      categories: this.categories,
     };
   }
 
