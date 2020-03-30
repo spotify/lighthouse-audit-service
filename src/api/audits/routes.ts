@@ -12,29 +12,15 @@ import {
   deleteAudit,
   AuditOptions,
 } from './methods';
-import { InvalidRequestError } from '../../errors';
+import { ListResponse, listOptionsFromQuery } from '../listHelpers';
 
 interface RequestWithBody<T> extends Request {
   body: T;
 }
 
-interface RequestWithQuery<T> extends Request {
-  query: T;
-}
-
 interface TriggerAuditRequest {
   url: string;
   options?: AuditOptions;
-}
-
-interface AuditListRequestParams {
-  limit?: number;
-  offset?: number;
-}
-
-interface AuditListResponse extends AuditListRequestParams {
-  audits: AuditListItem[];
-  total: number;
 }
 
 export function bindRoutes(router: Router, conn: DbConnectionType): void {
@@ -46,31 +32,16 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
       req: RequestWithBody<TriggerAuditRequest>,
       res: Response<AuditBody>,
     ) => {
-      const audit = await triggerAudit(req.body.url, conn, req.body.options);
+      const audit = await triggerAudit(conn, req.body.url, req.body.options);
       res.status(201).json(audit.body);
     },
   );
 
   router.get(
     '/v1/audits',
-    async (
-      req: RequestWithQuery<{
-        limit: string;
-        offset: string;
-      }>,
-      res: Response<AuditListResponse>,
-    ) => {
-      const { limit: limitStr = '25', offset: offsetStr = '0' } = req.query;
-      const limit = +limitStr;
-      const offset = +offsetStr;
-
-      if (isNaN(limit))
-        throw new InvalidRequestError(`limit must be a number.`);
-      if (isNaN(offset))
-        throw new InvalidRequestError(`offset must be a number.`);
-
-      const [audits, total] = await getAudits({ limit, offset }, conn);
-      res.json({ audits: audits.map(a => a.listItem), total, limit, offset });
+    async (req: Request, res: Response<ListResponse<AuditListItem>>) => {
+      const response = await getAudits(conn, listOptionsFromQuery(req.query));
+      res.json(response);
     },
   );
 
@@ -80,7 +51,7 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
       req: Request<{ auditId: string }>,
       res: Response<AuditBody | string>,
     ) => {
-      const audit = await getAudit(req.params.auditId, conn);
+      const audit = await getAudit(conn, req.params.auditId);
       if (req.header('Accept') === 'application/json') {
         res.json(audit.body);
       } else {
@@ -94,7 +65,7 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
   router.delete(
     '/v1/audits/:auditId',
     async (req: Request<{ auditId: string }>, res: Response<AuditBody>) => {
-      const audit = await deleteAudit(req.params.auditId, conn);
+      const audit = await deleteAudit(conn, req.params.auditId);
       res.json(audit.body);
     },
   );

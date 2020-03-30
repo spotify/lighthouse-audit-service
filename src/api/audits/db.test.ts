@@ -48,7 +48,7 @@ describe('audit db methods', () => {
 
     it('creates a new audit', async () => {
       const audit = Audit.buildForUrl('https://spotify.com');
-      await persistAudit(audit, conn);
+      await persistAudit(conn, audit);
       const resp = await conn.query(
         SQL`SELECT url FROM lighthouse_audits WHERE id = ${audit.id}`,
       );
@@ -57,7 +57,7 @@ describe('audit db methods', () => {
 
     it('updates an existing audit', async () => {
       const audit = Audit.buildForUrl('https://spotify.com');
-      await persistAudit(audit, conn);
+      await persistAudit(conn, audit);
       const resp = await conn.query(
         SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
       );
@@ -65,7 +65,7 @@ describe('audit db methods', () => {
       expect(resp.rows[0].report_json).toBeFalsy();
 
       audit.updateWithReport(JSON.parse(LIGHTHOUSE_REPORT_FIXTURE));
-      await persistAudit(audit, conn);
+      await persistAudit(conn, audit);
       const resp2 = await conn.query(
         SQL`SELECT url, report_json FROM lighthouse_audits WHERE id = ${audit.id}`,
       );
@@ -83,11 +83,11 @@ describe('audit db methods', () => {
 
       beforeEach(async () => {
         audit = Audit.buildForUrl('https://spotify.com');
-        await persistAudit(audit, conn);
+        await persistAudit(conn, audit);
       });
 
       it('returns an audit for the id', async () => {
-        const retrieivedAudit = await retrieveAuditById(audit.id, conn);
+        const retrieivedAudit = await retrieveAuditById(conn, audit.id);
         expect(retrieivedAudit.url).toBe(audit.url);
         expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
         expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
@@ -102,11 +102,11 @@ describe('audit db methods', () => {
         audit = Audit.buildForUrl('https://spotify.com').updateWithReport(
           JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
         );
-        await persistAudit(audit, conn);
+        await persistAudit(conn, audit);
       });
 
       it('returns an audit for the id', async () => {
-        const retrieivedAudit = await retrieveAuditById(audit.id, conn);
+        const retrieivedAudit = await retrieveAuditById(conn, audit.id);
         expect(retrieivedAudit.url).toBe(audit.url);
         expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
         expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
@@ -116,7 +116,7 @@ describe('audit db methods', () => {
 
     describe('when id doesnt exist', () => {
       it('throws a NotFoundError', async () => {
-        await expect(retrieveAuditById(uuid(), conn)).rejects.toThrowError(
+        await expect(retrieveAuditById(conn, uuid())).rejects.toThrowError(
           NotFoundError,
         );
       });
@@ -126,18 +126,18 @@ describe('audit db methods', () => {
   describe('#retrieveAuditList', () => {
     beforeEach(async () => {
       const first = persistAudit(
-        Audit.buildForUrl('https://spotify.com/se'),
         conn,
+        Audit.buildForUrl('https://spotify.com/se'),
       );
       await wait(10);
       const middle = persistAudit(
-        Audit.buildForUrl('https://spotify.com/gb'),
         conn,
+        Audit.buildForUrl('https://spotify.com/gb'),
       );
       await wait(10);
       const last = persistAudit(
-        Audit.buildForUrl('https://spotify.com/en'),
         conn,
+        Audit.buildForUrl('https://spotify.com/en'),
       );
       await Promise.all([first, middle, last]);
 
@@ -150,26 +150,26 @@ describe('audit db methods', () => {
     });
 
     it('returns the list of Audits', async () => {
-      const audits = await retrieveAuditList({}, conn);
+      const audits = await retrieveAuditList(conn, {});
       expect(audits).toHaveLength(3);
-      expect(audits[0]).toBeInstanceOf(Audit);
+      expect(typeof audits[0].id).toBe('string');
     });
 
     describe('when limit and offset are applied', () => {
       it('correctly filters the data', async () => {
-        const audits = await retrieveAuditList({ limit: 1 }, conn);
+        const audits = await retrieveAuditList(conn, { limit: 1 });
         expect(audits).toHaveLength(1);
         expect(audits[0].url).toBe('https://spotify.com/en');
       });
 
       it('correctly offsets the data', async () => {
-        const audits = await retrieveAuditList({ limit: 1, offset: 1 }, conn);
+        const audits = await retrieveAuditList(conn, { limit: 1, offset: 1 });
         expect(audits).toHaveLength(1);
         expect(audits[0].url).toBe('https://spotify.com/gb');
       });
 
       it('correctly returns when you page past the data', async () => {
-        const audits = await retrieveAuditList({ limit: 1, offset: 5 }, conn);
+        const audits = await retrieveAuditList(conn, { limit: 1, offset: 5 });
         expect(audits).toHaveLength(0);
       });
     });
@@ -180,7 +180,7 @@ describe('audit db methods', () => {
       });
 
       it('returns correctly', async () => {
-        const audits = await retrieveAuditList({}, conn);
+        const audits = await retrieveAuditList(conn, {});
         expect(audits).toHaveLength(0);
       });
     });
@@ -191,16 +191,16 @@ describe('audit db methods', () => {
       await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
 
       const first = persistAudit(
-        Audit.buildForUrl('https://spotify.com/se'),
         conn,
+        Audit.buildForUrl('https://spotify.com/se'),
       );
       const middle = persistAudit(
-        Audit.buildForUrl('https://spotify.com/gb'),
         conn,
+        Audit.buildForUrl('https://spotify.com/gb'),
       );
       const last = persistAudit(
-        Audit.buildForUrl('https://spotify.com/en'),
         conn,
+        Audit.buildForUrl('https://spotify.com/en'),
       );
       await Promise.all([first, middle, last]);
       await conn.query(SQL`COMMIT;`);
@@ -230,21 +230,21 @@ describe('audit db methods', () => {
 
     beforeEach(async () => {
       audit = Audit.buildForUrl('https://spotify.com');
-      await persistAudit(audit, conn);
+      await persistAudit(conn, audit);
     });
 
     it('deletes the audit for from the db', async () => {
-      await expect(retrieveAuditById(audit.id, conn)).resolves.toBeInstanceOf(
+      await expect(retrieveAuditById(conn, audit.id)).resolves.toBeInstanceOf(
         Audit,
       );
-      await deleteAuditById(audit.id, conn);
-      await expect(retrieveAuditById(audit.id, conn)).rejects.toThrowError(
+      await deleteAuditById(conn, audit.id);
+      await expect(retrieveAuditById(conn, audit.id)).rejects.toThrowError(
         NotFoundError,
       );
     });
 
     it('returns the audit', async () => {
-      const retrieivedAudit = await deleteAuditById(audit.id, conn);
+      const retrieivedAudit = await deleteAuditById(conn, audit.id);
       expect(retrieivedAudit.url).toBe(audit.url);
       expect(retrieivedAudit.timeCreated).toEqual(audit.timeCreated);
       expect(retrieivedAudit.timeCompleted).toEqual(audit.timeCompleted);
@@ -253,7 +253,7 @@ describe('audit db methods', () => {
 
     describe('when id doesnt exist', () => {
       it('throws a NotFoundError', async () => {
-        await expect(deleteAuditById(uuid(), conn)).rejects.toThrowError(
+        await expect(deleteAuditById(conn, uuid())).rejects.toThrowError(
           NotFoundError,
         );
       });
