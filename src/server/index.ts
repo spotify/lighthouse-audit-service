@@ -5,6 +5,7 @@ import express, {
   Response,
   NextFunction,
 } from 'express';
+import cors from 'cors';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import expressPromiseRouter from 'express-promise-router';
@@ -14,16 +15,21 @@ import { Pool } from 'pg';
 
 import logger from '../logger';
 import { runDbMigrations, awaitDbConnection, DbConnectionType } from '../db';
-import { bindRoutes as bindAuditRoutes } from '../api/audit';
+import { bindRoutes as bindAuditRoutes } from '../api/audits';
 import { StatusCodeError } from '../errors';
 
 const DEFAULT_PORT = 3003;
+const DEFAULT_CORS = true;
 
 export interface LighthouseAuditServiceOptions {
   port?: number;
+  useCors?: boolean;
 }
 
-function configureMiddleware(app: Application) {
+function configureMiddleware(app: Application, useCors: boolean) {
+  if (useCors) {
+    app.use(cors());
+  }
   app.use(compression());
   app.use(bodyParser.json());
   app.use(
@@ -38,9 +44,9 @@ function configureMiddleware(app: Application) {
 }
 
 export function configureErrorMiddleware(app: Application) {
-  app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof StatusCodeError) res.status(err.statusCode);
-    next(err);
+    res.send(err.message);
   });
 }
 
@@ -52,6 +58,7 @@ function configureRoutes(router: Router, conn: DbConnectionType) {
 
 export async function getApp(
   conn: DbConnectionType = new Pool(),
+  useCors: boolean = DEFAULT_CORS,
 ): Promise<Application> {
   logger.debug('building express app...');
 
@@ -59,7 +66,7 @@ export async function getApp(
   await runDbMigrations(conn);
 
   const app = express();
-  configureMiddleware(app);
+  configureMiddleware(app, useCors);
 
   const router = expressPromiseRouter();
   configureRoutes(router, conn);
@@ -72,9 +79,10 @@ export async function getApp(
 
 export default async function startServer({
   port = DEFAULT_PORT,
+  useCors = DEFAULT_CORS,
 }: LighthouseAuditServiceOptions = {}): Promise<Server> {
   const conn = new Pool();
-  const app = await getApp(conn);
+  const app = await getApp(conn, useCors);
 
   logger.debug('starting application server...');
   return await new Promise((resolve, reject) => {
