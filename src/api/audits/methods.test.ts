@@ -228,7 +228,7 @@ describe('audit methods', () => {
 
     beforeEach(() => {
       audit = Audit.buildForUrl('https://spotify.com');
-      db.retrieveAuditList.mockResolvedValueOnce([audit.listItem]);
+      db.retrieveAuditList.mockResolvedValueOnce([audit]);
       db.retrieveAuditCount.mockResolvedValueOnce(1);
     });
 

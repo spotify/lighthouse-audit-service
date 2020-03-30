@@ -159,7 +159,7 @@ export async function getAudit(
 }
 
 export const getAudits = listResponseFactory<AuditListItem>(
-  retrieveAuditList,
+  async (...args) => (await retrieveAuditList(...args)).map(a => a.listItem),
   retrieveAuditCount,
 );
 

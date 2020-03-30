@@ -5,7 +5,6 @@ import { NotFoundError } from '../../errors';
 import { DbConnectionType } from '../../db';
 import { Audit } from './models';
 import { ListRequest, addListRequestToQuery } from '../listHelpers';
-import { AuditListItem } from './models';
 
 export interface AuditRow {
   id: string;
@@ -42,14 +41,14 @@ export async function persistAudit(
 export async function retrieveAuditList(
   conn: DbConnectionType,
   options: ListRequest = {},
-): Promise<AuditListItem[]> {
+): Promise<Audit[]> {
   const res = await conn.query<AuditRow>(
     addListRequestToQuery(
       SQL`SELECT * FROM lighthouse_audits ORDER BY time_created DESC`,
       options,
     ),
   );
-  return res.rows.map(row => Audit.buildForDbRow(row).listItem);
+  return res.rows.map(Audit.buildForDbRow);
 }
 
 export async function retrieveAuditCount(

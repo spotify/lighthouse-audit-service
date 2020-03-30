@@ -36,7 +36,7 @@ describe('audit methods', () => {
         url: 'https://spotify.com',
         audits: [Audit.buildForUrl('https://spotify.com').listItem],
       });
-      db.retrieveWebsiteList.mockResolvedValueOnce([website.listItem]);
+      db.retrieveWebsiteList.mockResolvedValueOnce([website]);
       db.retrieveWebsiteTotal.mockResolvedValueOnce(1);
     });
 

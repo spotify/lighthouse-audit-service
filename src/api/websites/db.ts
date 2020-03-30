@@ -1,6 +1,6 @@
 import SQL from 'sql-template-strings';
 
-import { Website, WebsiteListItem } from './models';
+import { Website } from './models';
 import { DbConnectionType } from '../../db';
 import { ListRequest, addListRequestToQuery } from '../listHelpers';
 
@@ -11,13 +11,16 @@ export interface WebsiteRow {
 }
 
 // TODO retrieve website by url
+// export async function retrieveWebsiteByUrl(conn: DbConnectionType, url: string): Promise<Website> {
+
+// }
 
 // TODO retrieve website from audit id
 
 export async function retrieveWebsiteList(
   conn: DbConnectionType,
   options: ListRequest,
-): Promise<WebsiteListItem[]> {
+): Promise<Website[]> {
   const queryResult = await conn.query<WebsiteRow>(
     addListRequestToQuery(
       SQL`
@@ -38,7 +41,7 @@ export async function retrieveWebsiteList(
     ),
   );
 
-  return queryResult.rows.map(r => Website.buildForDbRow(r).listItem);
+  return queryResult.rows.map(Website.buildForDbRow);
 }
 
 export async function retrieveWebsiteTotal(

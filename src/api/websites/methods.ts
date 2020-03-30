@@ -3,6 +3,6 @@ import { listResponseFactory } from '../listHelpers';
 import { WebsiteListItem } from './models';
 
 export const getWebsites = listResponseFactory<WebsiteListItem>(
-  retrieveWebsiteList,
+  async (...args) => (await retrieveWebsiteList(...args)).map(w => w.listItem),
   retrieveWebsiteTotal,
 );
