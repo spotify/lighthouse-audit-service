@@ -16,6 +16,7 @@ import { Pool } from 'pg';
 import logger from '../logger';
 import { runDbMigrations, awaitDbConnection, DbConnectionType } from '../db';
 import { bindRoutes as bindAuditRoutes } from '../api/audits';
+import { bindRoutes as bindWebsiteRoutes } from '../api/websites';
 import { StatusCodeError } from '../errors';
 
 const DEFAULT_PORT = 3003;
@@ -54,6 +55,7 @@ function configureRoutes(router: Router, conn: DbConnectionType) {
   logger.debug('attaching routes...');
   router.get('/_ping', (_req, res) => res.sendStatus(200));
   bindAuditRoutes(router, conn);
+  bindWebsiteRoutes(router, conn);
 }
 
 export async function getApp(

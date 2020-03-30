@@ -4,11 +4,8 @@ import { LHR } from 'lighthouse';
 import { NotFoundError } from '../../errors';
 import { DbConnectionType } from '../../db';
 import { Audit } from './models';
-
-export interface AuditListOptions {
-  limit?: number;
-  offset?: number;
-}
+import { ListRequest, addListRequestToQuery } from '../listHelpers';
+import { AuditListItem } from './models';
 
 export interface AuditRow {
   id: string;
@@ -19,8 +16,8 @@ export interface AuditRow {
 }
 
 export async function persistAudit(
-  audit: Audit,
   conn: DbConnectionType,
+  audit: Audit,
 ): Promise<void> {
   await conn.query(SQL`
     INSERT INTO lighthouse_audits (id, url, time_created, time_completed, report_json)
@@ -43,18 +40,16 @@ export async function persistAudit(
 }
 
 export async function retrieveAuditList(
-  options: AuditListOptions = {},
   conn: DbConnectionType,
-): Promise<Audit[]> {
-  const query = SQL`SELECT * FROM lighthouse_audits ORDER BY time_created DESC`;
-  if (typeof options.limit === 'number')
-    query.append(SQL`\nLIMIT ${options.limit}`);
-  if (typeof options.offset === 'number')
-    query.append(SQL`\nOFFSET ${options.offset}`);
-
-  const res = await conn.query<AuditRow>(query);
-
-  return res.rows.map(Audit.buildForDbRow);
+  options: ListRequest = {},
+): Promise<AuditListItem[]> {
+  const res = await conn.query<AuditRow>(
+    addListRequestToQuery(
+      SQL`SELECT * FROM lighthouse_audits ORDER BY time_created DESC`,
+      options,
+    ),
+  );
+  return res.rows.map(row => Audit.buildForDbRow(row).listItem);
 }
 
 export async function retrieveAuditCount(
@@ -67,8 +62,8 @@ export async function retrieveAuditCount(
 }
 
 export async function retrieveAuditById(
-  auditId: string,
   conn: DbConnectionType,
+  auditId: string,
 ): Promise<Audit> {
   const res = await conn.query<AuditRow>(SQL`
     SELECT * FROM lighthouse_audits WHERE id = ${auditId};
@@ -79,8 +74,8 @@ export async function retrieveAuditById(
 }
 
 export async function deleteAuditById(
-  auditId: string,
   conn: DbConnectionType,
+  auditId: string,
 ): Promise<Audit> {
   const res = await conn.query<AuditRow>(SQL`
     DELETE FROM lighthouse_audits

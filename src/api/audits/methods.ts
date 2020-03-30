@@ -2,18 +2,18 @@ import lighthouse, { LighthouseConfig } from 'lighthouse';
 import waitOn from 'wait-on';
 import puppeteer from 'puppeteer';
 
-import { Audit } from './models';
+import { Audit, AuditListItem } from './models';
 import {
   persistAudit,
   retrieveAuditById,
   retrieveAuditList,
   deleteAuditById,
-  AuditListOptions,
   retrieveAuditCount,
 } from './db';
 import parentLogger from '../../logger';
 import { DbConnectionType } from '../../db';
 import { InvalidRequestError } from '../../errors';
+import { listResponseFactory } from '../listHelpers';
 
 const DEFAULT_UP_TIMEOUT = 180000;
 const DEFAULT_CHROME_PORT = 9222;
@@ -38,8 +38,8 @@ export interface AuditOptions {
  * @returns Promise<Audit>
  */
 export async function triggerAudit(
-  url: string,
   conn: DbConnectionType,
+  url: string,
   options: AuditOptions = {},
 ): Promise<Audit> {
   if (!url)
@@ -53,14 +53,14 @@ export async function triggerAudit(
     );
 
   const audit = Audit.buildForUrl(url);
-  await persistAudit(audit, conn);
+  await persistAudit(conn, audit);
 
   if (options.awaitAuditCompleted) {
     await runAudit(audit, options);
-    await persistAudit(audit, conn);
+    await persistAudit(conn, audit);
   } else {
     // run in background
-    runAudit(audit, options).then(() => persistAudit(audit, conn));
+    runAudit(audit, options).then(() => persistAudit(conn, audit));
   }
 
   return audit;
@@ -152,25 +152,20 @@ async function runAudit(
 }
 
 export async function getAudit(
-  auditId: string,
   conn: DbConnectionType,
+  auditId: string,
 ): Promise<Audit> {
-  return await retrieveAuditById(auditId, conn);
+  return await retrieveAuditById(conn, auditId);
 }
 
-export async function getAudits(
-  options: AuditListOptions,
-  conn: DbConnectionType,
-): Promise<[Audit[], number]> {
-  return await Promise.all([
-    retrieveAuditList(options, conn),
-    retrieveAuditCount(conn),
-  ]);
-}
+export const getAudits = listResponseFactory<AuditListItem>(
+  retrieveAuditList,
+  retrieveAuditCount,
+);
 
 export async function deleteAudit(
-  auditId: string,
   conn: DbConnectionType,
+  auditId: string,
 ): Promise<Audit> {
-  return await deleteAuditById(auditId, conn);
+  return await deleteAuditById(conn, auditId);
 }

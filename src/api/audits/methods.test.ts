@@ -72,12 +72,12 @@ describe('audit methods', () => {
     });
 
     it('returns a started audit', async () => {
-      const audit = await triggerAudit('https://spotify.com', conn);
+      const audit = await triggerAudit(conn, 'https://spotify.com');
       expect(audit.status).toBe(AuditStatus.RUNNING);
     });
 
     it('kicks off lighthouse in the background', async () => {
-      await triggerAudit('https://spotify.com/es', conn);
+      await triggerAudit(conn, 'https://spotify.com/es');
       await wait(); // wait for background job to flush
       expect(lighthouse).toHaveBeenCalledWith(
         'https://spotify.com/es',
@@ -89,13 +89,13 @@ describe('audit methods', () => {
     });
 
     it('persists the triggered audit', async () => {
-      const audit = await triggerAudit('https://spotify.com', conn);
-      expect(db.persistAudit).toHaveBeenCalledWith(audit, conn);
+      const audit = await triggerAudit(conn, 'https://spotify.com');
+      expect(db.persistAudit).toHaveBeenCalledWith(conn, audit);
     });
 
     describe('when using options', () => {
       it('passes the options along to lighthouse', async () => {
-        await triggerAudit('https://spotify.com', conn, {
+        await triggerAudit(conn, 'https://spotify.com', {
           upTimeout: 1234,
           chromePort: 1000,
           chromePath: 'some/path',
@@ -128,24 +128,24 @@ describe('audit methods', () => {
 
     describe('when using awaitAuditCompleted', () => {
       it('returns a completed audit', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
         expect(audit.status).toBe(AuditStatus.COMPLETED);
       });
 
       it('attaches the report to the audit', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
         expect(audit).toBeTruthy();
       });
 
       it('persists the report', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
-        expect(db.persistAudit).toHaveBeenCalledWith(audit, conn);
+        expect(db.persistAudit).toHaveBeenCalledWith(conn, audit);
       });
     });
 
@@ -161,7 +161,7 @@ describe('audit methods', () => {
     describe('when url does not contain protocol', () => {
       it('throws an InvalidRequestError', async () => {
         await expect(
-          triggerAudit('www.spotify.com', conn),
+          triggerAudit(conn, 'www.spotify.com'),
         ).rejects.toThrowError(InvalidRequestError);
       });
     });
@@ -172,7 +172,7 @@ describe('audit methods', () => {
       });
 
       it('returns a failed audit', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
         expect(audit.status).toBe(AuditStatus.FAILED);
@@ -187,7 +187,7 @@ describe('audit methods', () => {
       });
 
       it('returns a failed audit', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
         expect(audit.status).toBe(AuditStatus.FAILED);
@@ -202,7 +202,7 @@ describe('audit methods', () => {
       });
 
       it('returns a failed audit', async () => {
-        const audit = await triggerAudit('https://spotify.com', conn, {
+        const audit = await triggerAudit(conn, 'https://spotify.com', {
           awaitAuditCompleted: true,
         });
         expect(audit.status).toBe(AuditStatus.FAILED);
@@ -219,7 +219,7 @@ describe('audit methods', () => {
     });
 
     it('returns the retrieved audit', async () => {
-      await expect(getAudit(audit.id, conn)).resolves.toMatchObject(audit);
+      await expect(getAudit(conn, audit.id)).resolves.toMatchObject(audit);
     });
   });
 
@@ -228,12 +228,17 @@ describe('audit methods', () => {
 
     beforeEach(() => {
       audit = Audit.buildForUrl('https://spotify.com');
-      db.retrieveAuditList.mockResolvedValueOnce([audit]);
+      db.retrieveAuditList.mockResolvedValueOnce([audit.listItem]);
       db.retrieveAuditCount.mockResolvedValueOnce(1);
     });
 
     it('returns the audit list and count', async () => {
-      await expect(getAudits({}, conn)).resolves.toEqual([[audit], 1]);
+      await expect(getAudits(conn, { limit: 5, offset: 10 })).resolves.toEqual({
+        items: [audit.listItem],
+        total: 1,
+        limit: 5,
+        offset: 10,
+      });
     });
   });
 
@@ -246,7 +251,7 @@ describe('audit methods', () => {
     });
 
     it('returns the deleted audit', async () => {
-      await expect(deleteAudit(audit.id, conn)).resolves.toMatchObject(audit);
+      await expect(deleteAudit(conn, audit.id)).resolves.toMatchObject(audit);
     });
   });
 });

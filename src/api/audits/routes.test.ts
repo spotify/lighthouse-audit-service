@@ -7,7 +7,7 @@ import request from 'supertest';
 import expressPromiseRouter from 'express-promise-router';
 
 import { bindRoutes } from './routes';
-import { Audit } from './models';
+import { Audit, AuditListItem } from './models';
 import { configureErrorMiddleware } from '../../server';
 import { InvalidRequestError } from '../../errors';
 
@@ -72,8 +72,8 @@ describe('audit routes', () => {
         .expect(201)
         .then(() => {
           expect(methods.triggerAudit).toHaveBeenCalledWith(
-            payload.url,
             conn,
+            payload.url,
             undefined,
           );
         });
@@ -91,7 +91,7 @@ describe('audit routes', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(() => {
-          expect(methods.triggerAudit).toHaveBeenCalledWith(payload.url, conn, {
+          expect(methods.triggerAudit).toHaveBeenCalledWith(conn, payload.url, {
             chromePort: 1234,
           });
         });
@@ -139,15 +139,26 @@ describe('audit routes', () => {
   });
 
   describe('GET /v1/audits', () => {
-    let audits: Audit[];
+    let items: AuditListItem[];
     beforeEach(() => {
-      audits = [
-        Audit.buildForUrl('https://spotify.com'),
-        Audit.buildForUrl('https://spotify.com'),
-        Audit.buildForUrl('https://spotify.com'),
+      items = [
+        Audit.buildForUrl('https://spotify.com').updateWithReport(
+          JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+        ).listItem,
+        Audit.buildForUrl('https://spotify.com').updateWithReport(
+          JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+        ).listItem,
+        Audit.buildForUrl('https://spotify.com').updateWithReport(
+          JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+        ).listItem,
       ];
 
-      methods.getAudits.mockResolvedValueOnce([audits, audits.length]);
+      methods.getAudits.mockResolvedValueOnce({
+        items,
+        total: 3,
+        limit: 25,
+        offset: 0,
+      });
     });
 
     it('returns the correct payload', async () => {
@@ -157,9 +168,8 @@ describe('audit routes', () => {
         .expect('Content-Type', /json/)
         .expect(200)
         .then(res => {
-          expect(res.body.audits[0].url).toBe(audits[0].url);
-          expect(res.body.audits[0].report).toBeUndefined();
-          expect(res.body.total).toBe(audits.length);
+          expect(res.body.items).toBeInstanceOf(Array);
+          expect(res.body.total).toBe(3);
           expect(res.body.limit).toBe(25);
           expect(res.body.offset).toBe(0);
         });
@@ -172,13 +182,11 @@ describe('audit routes', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
-        .then(res => {
-          expect(methods.getAudits).toHaveBeenCalledWith(
-            { limit: 5, offset: 5 },
-            conn,
-          );
-          expect(res.body.limit).toBe(5);
-          expect(res.body.offset).toBe(5);
+        .then(() => {
+          expect(methods.getAudits).toHaveBeenCalledWith(conn, {
+            limit: 5,
+            offset: 5,
+          });
         });
     });
 
@@ -269,7 +277,7 @@ describe('audit routes', () => {
         .expect('Content-Type', /json/)
         .expect(200)
         .then(() => {
-          expect(methods.deleteAudit).toHaveBeenCalledWith(audit.id, conn);
+          expect(methods.deleteAudit).toHaveBeenCalledWith(conn, audit.id);
         });
     });
 
