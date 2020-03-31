@@ -27,7 +27,7 @@ async function getSchema(conn: DbConnectionType) {
 
 export async function awaitDbConnection(
   conn: DbConnectionType,
-  options?: Options,
+  options: Options = { maxRetryTime: 10000 },
 ): Promise<void> {
   logger.debug('awaiting db connection...');
   await retry(async () => {

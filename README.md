@@ -6,7 +6,7 @@ A service meant to help you run, schedule, store, and monitor Lighthouse reports
 
 ### As a library
 
-Install the project
+Install the project:
 
 ```sh
 yarn add @spotify/lighthouse-audit-service
@@ -108,7 +108,7 @@ _Please note that this API is subject to change prior to a 1.0.0 release. Change
 
 We are currently [seeking contributions](https://github.com/spotify/lighthouse-audit-service/issues/23) on documenting the API in a sustainable way (aka with Swagger/OpenAPI, preferably generated). For now, the REST API includes:
 
-#### Audits
+#### Audit routes
 
 - `GET /v1/audits` - list of all audits run
 - `GET /v1/audits/:auditId` - get an audit, either as HTML or JSON depending on the `Accept` header of the request.
@@ -123,7 +123,7 @@ We are currently [seeking contributions](https://github.com/spotify/lighthouse-a
       - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
 - `DELETE /v1/audits/:auditId` - delete an audit
 
-#### Websites
+#### Website routes
 
 - `GET /v1/websites` - list of audits grouped by url
 - `GET /v1/websites/:websiteUrl` - get the audits associated with this url. _be sure to uri encode that url!_
@@ -138,7 +138,7 @@ All of the API methods exposed on REST are also exposed programatically.
 - `startServer(options?, conn?)` - start REST server
 - `getApp(options?, conn?)` - return express app, ready to be started
 
-#### Audits
+#### Audit methods
 
 - `getAudits(conn, listOptions?)` - list of all audits run
   - listOptions (all optional):
@@ -163,7 +163,7 @@ All of the API methods exposed on REST are also exposed programatically.
       - rendering the HTML for an LHR [can be done programatically by the Lighthouse package](). The lighthouse-audit-service REST API does this automatically.
     - `categories: LHRCategories`: nullable map of categories, stripped down to only include the scores. useful for lists of audits, when trying to keep the payload to a reasonable size.
 
-#### Websites
+#### Website methods
 
 - `getWebsites(conn, listOptions?)` - list of audits grouped by url
   - listOptions (all optional):
@@ -176,6 +176,12 @@ All of the API methods exposed on REST are also exposed programatically.
     - `url: string`: the audited url
     - `audits: Audit[]`: list of Audits for that URL.
 
-## Contributing
+## Community
 
-See our [Contributing Guidelines](./CONTRIBUTING.md).
+See our [Code of Conduct](./CODE_OF_CONDUCT.md). Contributions are welcome!
+
+## License
+
+Copyright 2020 Spotify AB.
+
+Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
