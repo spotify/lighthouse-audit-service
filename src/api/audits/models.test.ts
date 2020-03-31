@@ -125,6 +125,58 @@ describe('audit models', () => {
     });
   });
 
+  describe('audit.categories', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+    });
+
+    describe('when a report exists', () => {
+      beforeEach(() => {
+        audit.updateWithReport(JSON.parse(LIGHTHOUSE_REPORT_FIXTURE));
+      });
+
+      it('returns the abbreviated categories record', () => {
+        expect(audit.categories).toMatchInlineSnapshot(`
+          Object {
+            "accessibility": Object {
+              "id": "accessibility",
+              "score": 0.79,
+              "title": "Accessibility",
+            },
+            "best-practices": Object {
+              "id": "best-practices",
+              "score": 0.86,
+              "title": "Best Practices",
+            },
+            "performance": Object {
+              "id": "performance",
+              "score": 0.35,
+              "title": "Performance",
+            },
+            "pwa": Object {
+              "id": "pwa",
+              "score": 0.33,
+              "title": "Progressive Web App",
+            },
+            "seo": Object {
+              "id": "seo",
+              "score": 0.99,
+              "title": "SEO",
+            },
+          }
+        `);
+      });
+    });
+
+    describe('when no report exists', () => {
+      it('returns undefined', () => {
+        expect(audit.categories).toBeUndefined();
+      });
+    });
+  });
+
   describe('audit.updateWithReport(report)', () => {
     it('sets the report', () => {
       const audit = Audit.buildForUrl('https://spotify.com');

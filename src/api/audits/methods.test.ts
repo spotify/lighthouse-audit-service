@@ -64,6 +64,32 @@ describe('audit methods', () => {
     conn.end();
   });
 
+  describe('#getAudit', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      db.retrieveAuditById.mockResolvedValueOnce(audit);
+    });
+
+    it('returns the retrieved audit', async () => {
+      await expect(getAudit(conn, audit.id)).resolves.toMatchObject(audit);
+    });
+  });
+
+  describe('#deleteAudit', () => {
+    let audit: Audit;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com');
+      db.deleteAuditById.mockResolvedValueOnce(audit);
+    });
+
+    it('returns the deleted audit', async () => {
+      await expect(deleteAudit(conn, audit.id)).resolves.toMatchObject(audit);
+    });
+  });
+
   describe('#triggerAudit', () => {
     // ensure that we wait for any background writes that are still occurring wrap up
     // so that they don't infect other tests.
@@ -210,25 +236,12 @@ describe('audit methods', () => {
     });
   });
 
-  describe('#getAudit', () => {
-    let audit: Audit;
-
-    beforeEach(() => {
-      audit = Audit.buildForUrl('https://spotify.com');
-      db.retrieveAuditById.mockResolvedValueOnce(audit);
-    });
-
-    it('returns the retrieved audit', async () => {
-      await expect(getAudit(conn, audit.id)).resolves.toMatchObject(audit);
-    });
-  });
-
   describe('#getAuditList', () => {
     let audit: Audit;
 
     beforeEach(() => {
       audit = Audit.buildForUrl('https://spotify.com');
-      db.retrieveAuditList.mockResolvedValueOnce([audit.listItem]);
+      db.retrieveAuditList.mockResolvedValueOnce([audit]);
       db.retrieveAuditCount.mockResolvedValueOnce(1);
     });
 
@@ -239,19 +252,6 @@ describe('audit methods', () => {
         limit: 5,
         offset: 10,
       });
-    });
-  });
-
-  describe('#deleteAudit', () => {
-    let audit: Audit;
-
-    beforeEach(() => {
-      audit = Audit.buildForUrl('https://spotify.com');
-      db.deleteAuditById.mockResolvedValueOnce(audit);
-    });
-
-    it('returns the deleted audit', async () => {
-      await expect(deleteAudit(conn, audit.id)).resolves.toMatchObject(audit);
     });
   });
 });

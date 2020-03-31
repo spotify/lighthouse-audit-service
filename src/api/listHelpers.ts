@@ -5,6 +5,7 @@ import SQL, { SQLStatement } from 'sql-template-strings';
 export interface ListRequest {
   limit?: number;
   offset?: number;
+  where?: SQLStatement;
 }
 
 export interface ListResponse<Item> extends ListRequest {

@@ -6,11 +6,13 @@ export interface WebsiteParams {
   audits: AuditListItem[];
 }
 
-export interface WebsiteListItem {
+export interface WebsiteBody {
   url: string;
   lastAudit: AuditListItem;
   audits: AuditListItem[];
 }
+
+export interface WebsiteListItem extends WebsiteBody {}
 
 export class Website {
   constructor(public url: string, public audits: AuditListItem[]) {
@@ -36,11 +38,15 @@ export class Website {
     return this.audits[0];
   }
 
-  get listItem(): WebsiteListItem {
+  get body(): WebsiteBody {
     return {
       url: this.url,
       audits: this.audits,
       lastAudit: this.lastAudit,
     };
+  }
+
+  get listItem(): WebsiteListItem {
+    return this.body;
   }
 }

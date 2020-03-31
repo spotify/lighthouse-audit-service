@@ -54,6 +54,80 @@ describe('audit routes', () => {
     conn.end();
   });
 
+  describe('GET /v1/audits/:auditId/website', () => {
+    let audit: Audit;
+    let website: Website;
+
+    beforeEach(() => {
+      audit = Audit.buildForUrl('https://spotify.com').updateWithReport(
+        JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+      );
+      website = Website.build({
+        url: 'https://spotify.com',
+        audits: [audit.listItem],
+      });
+      methods.getWebsiteByAuditId.mockResolvedValueOnce(website);
+    });
+
+    it('returns the audit', async () => {
+      await request(app)
+        .get(`/v1/audits/${audit.id}/website`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(methods.getWebsiteByAuditId).toHaveBeenLastCalledWith(
+            conn,
+            audit.id,
+          );
+
+          expect(res.body.url).toBe('https://spotify.com');
+          expect(res.body.audits).toHaveLength(1);
+          expect(res.body.lastAudit.status).toBe('COMPLETED');
+          expect(res.body.lastAudit.timeCreated).toEqual(
+            audit.timeCreated?.toISOString(),
+          );
+          expect(res.body.lastAudit.timeCompleted).toEqual(
+            audit.timeCompleted?.toISOString(),
+          );
+          expect(res.body.lastAudit.id).toEqual(audit.id);
+        });
+    });
+  });
+
+  describe('GET /v1/websites/:websiteUrl', () => {
+    let website: Website;
+
+    beforeEach(() => {
+      website = Website.build({
+        url: 'https://spotify.com',
+        audits: [
+          Audit.buildForUrl('https://spotify.com').updateWithReport(
+            JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
+          ).listItem,
+        ],
+      });
+      methods.getWebsiteByUrl.mockResolvedValueOnce(website);
+    });
+
+    it('returns the audit', async () => {
+      await request(app)
+        .get(`/v1/websites/${encodeURIComponent('https://spotify.com')}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(methods.getWebsiteByUrl).toHaveBeenLastCalledWith(
+            conn,
+            'https://spotify.com',
+          );
+          expect(res.body.url).toBe('https://spotify.com');
+          expect(res.body.audits).toHaveLength(1);
+          expect(res.body.lastAudit.status).toBe('COMPLETED');
+        });
+    });
+  });
+
   describe('GET /v1/websites', () => {
     let items: WebsiteListItem[];
     beforeEach(() => {
