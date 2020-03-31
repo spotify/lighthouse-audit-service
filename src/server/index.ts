@@ -65,7 +65,7 @@ export async function getApp(
   options: LighthouseAuditServiceOptions = {},
   providedConn?: DbConnectionType,
 ): Promise<Application> {
-  logger.debug('building express app...');
+  logger.info('building express app...');
   const conn = providedConn || new Pool(options.postgresConfig);
 
   await awaitDbConnection(conn);
