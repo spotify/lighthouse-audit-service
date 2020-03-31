@@ -64,7 +64,7 @@ describe('audit routes', () => {
       );
       website = Website.build({
         url: 'https://spotify.com',
-        audits: [audit.listItem],
+        audits: [audit],
       });
       methods.getWebsiteByAuditId.mockResolvedValueOnce(website);
     });
@@ -104,7 +104,7 @@ describe('audit routes', () => {
         audits: [
           Audit.buildForUrl('https://spotify.com').updateWithReport(
             JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
-          ).listItem,
+          ),
         ],
       });
       methods.getWebsiteByUrl.mockResolvedValueOnce(website);
@@ -137,13 +137,13 @@ describe('audit routes', () => {
           audits: [
             Audit.buildForUrl('https://spotify.com').updateWithReport(
               JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
-            ).listItem,
+            ),
             Audit.buildForUrl('https://spotify.com').updateWithReport(
               JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
-            ).listItem,
+            ),
             Audit.buildForUrl('https://spotify.com').updateWithReport(
               JSON.parse(LIGHTHOUSE_REPORT_FIXTURE),
-            ).listItem,
+            ),
           ],
         }).listItem,
       ];

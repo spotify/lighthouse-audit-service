@@ -1,3 +1,2 @@
-export { getWebsites } from './methods';
+export { getWebsites, getWebsiteByAuditId, getWebsiteByUrl } from './methods';
 export { Website, WebsiteParams, WebsiteListItem } from './models';
-export { bindRoutes } from './routes';

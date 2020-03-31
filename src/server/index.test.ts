@@ -1,26 +1,44 @@
 /* eslint-disable jest/expect-expect */
+import express from 'express';
 import { Server } from 'http';
 import request from 'supertest';
 import getPort from 'get-port';
 
-import startServer from '.';
+import { startServer, getApp } from '.';
 
-describe('server scaffolding', () => {
-  let server: Server;
-  let port: number;
+describe('server exports', () => {
+  describe('#startServer', () => {
+    let server: Server;
+    let port: number;
 
-  beforeEach(async () => {
-    port = await getPort();
-    server = await startServer({ port });
+    beforeEach(async () => {
+      port = await getPort();
+      server = await startServer({ port });
+    });
+
+    afterEach(async () => {
+      await new Promise(resolve => server.close(() => resolve()));
+    });
+
+    it('exposes a _ping endpoint', async () => {
+      await request(`http://localhost:${port}`)
+        .get(`/_ping`)
+        .expect(200);
+    });
   });
 
-  afterEach(async () => {
-    await new Promise(resolve => server.close(() => resolve()));
-  });
+  describe('#getApp', () => {
+    it('exposes a _ping endpoint', async () => {
+      const app = express();
+      const las = await getApp();
+      app.use('/', las);
 
-  it('exposes a _ping endpoint', async () => {
-    await request(`http://localhost:${port}`)
-      .get(`/_ping`)
-      .expect(200);
+      await request(app)
+        .get(`/_ping`)
+        .expect(200)
+        .then(() => {
+          expect(() => las.get('connection').end()).not.toThrow();
+        });
+    });
   });
 });

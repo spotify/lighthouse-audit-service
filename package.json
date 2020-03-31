@@ -1,5 +1,5 @@
 {
-  "name": "lighthouse-audit-service",
+  "name": "@spotify/lighthouse-audit-service",
   "description": "Run, store, and view Lighthouse audits on all of your websites",
   "author": "Paul Marbach",
   "repository": {

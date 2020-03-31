@@ -1,16 +1,181 @@
-# web-scripts-template
+# Lighthouse Audit Service
 
-A [GitHub Template Repository](https://help.github.com/en/articles/creating-a-repository-from-a-template) to create an NPM library which uses [@spotify/web-scripts](https://github.com/spotify/web-scripts) for build, test, lint, auto-format, and release.
+A service meant to help you run, schedule, store, and monitor Lighthouse reports over time. The API is built with [Backstage](https://backstage.io) in mind, but can be used without!
 
 ## Usage
 
-Click the green "Use this template" button to create a new library from this template.
+### As a library
 
-Once you have your project, run `yarn` to install the dependencies. Try out scripts such as `yarn build`, `yarn lint`, and `yarn test`.
+Install the project
 
-## ONCE YOU HAVE CREATED YOUR REPO
+```sh
+yarn add @spotify/lighthouse-audit-service
+```
 
-- [ ] replace every `@@CHANGE THIS@@` in package.json
-- [ ] remove `private: true` if you plan to publish the library to NPM
-- [ ] use `yarn commit` when committing to this repo (uses commitizen)
-- [ ] set a `license` in your package.json and create a `LICENSE` file
+Then, you may either start up the server as a standalone process:
+
+```js
+import { startServer } from '@spotify/lighthouse-audit-service';
+
+startServer({
+  port: 8080,
+  cors: true,
+  postgresConfig: {
+    db: 'postgres',
+    database: 'mydb',
+    password: 'secretpassword',
+    port: 3211,
+  },
+});
+```
+
+### As an express app
+
+You may nest the [express app](https://expressjs.com/) that the lighthouse-audit-service exposes inside of another express app as a subapp by using `getApp` and `app.use()`:
+
+```js
+import express from 'express';
+import { getApp as getLighthouseAuditServerApp } from '@spotify/lighthouse-audit-server';
+
+async function startup() {
+  const app = express();
+  const lighthouseServer = await getLighthouseAuditServerApp();
+
+  app.use('/lighthouse', lighthouseServer);
+
+  const server = app.listen(4000, () => {
+    console.log(
+      'listening on 4000 - http://localhost:4000/lighthouse/v1/websites',
+    );
+  });
+
+  // be sure to `.get()` the connection and end it as you close your custom server.
+  server.on('close', () => {
+    lighthouseServer.get('connection').end();
+  });
+}
+
+startup();
+```
+
+### Configuring Postgres
+
+You will need a Postgres database for lighthouse-audit-service to use to manage the stored audits. The database will be configured on app startup, so you need only initialize an empty database and provide credentials to lighthouse-audit-service.
+
+You can set the Postgres credentials up either by setting [environment variables, which will be interpreted by pg](https://node-postgres.com/features/connecting#Environment%20variables):
+
+```sh
+PGUSER=dbuser \
+PGHOST=database.server.com \
+PGPASSWORD=secretpassword \
+PGDATABASE=mydb \
+PGPORT=3211 yarn start
+```
+
+..or, by [passing the config in programatically](https://node-postgres.com/features/connecting#Programmatic) as `postgresConfig`:
+
+```js
+import { startServer } from '@spotify/lighthouse-audit-service';
+
+startServer({
+  port: 8080,
+  cors: true,
+  postgresConfig: {
+    database: 'mydb',
+    host: 'my.db.host',
+    user: 'dbuser',
+    password: 'secretpassword',
+    port: 3211,
+  },
+});
+```
+
+Both `startServer` and `getApp` support this. Further, both of these methods support optionally passing a [pg client](https://node-postgres.com/) as an optional second argument.
+
+```js
+import { Pool } from 'pg';
+const conn = new Pool();
+startServer({}, conn);
+```
+
+## API
+
+We offer a REST API, as well as some programmatic ways, to interact with lighthouse-audits-service.
+
+_Please note that this API is subject to change prior to a 1.0.0 release. Changes will not be marked as breaking until then, as we are in the process of filling this service out with functionality and reserve the right to tweak the API and model._ We strive to avoid big changes and will communicate breaking changes in release notes.
+
+### REST
+
+We are currently [seeking contributions](https://github.com/spotify/lighthouse-audit-service/issues/23) on documenting the API in a sustainable way (aka with Swagger/OpenAPI, preferably generated). For now, the REST API includes:
+
+#### Audits
+
+- `GET /v1/audits` - list of all audits run
+- `GET /v1/audits/:auditId` - get an audit, either as HTML or JSON depending on the `Accept` header of the request.
+- `POST /v1/audits` - trigger a new audit
+  - expected JSON payload:
+    - `url: string` - url to audit
+    - `options` - all optional
+      - `awaitAuditCompleted: boolean` - makes awaiting `triggerAudit` wait until the audit has completed. By default, the audit runs in the background.
+      - `upTimeout: number` - time in ms to wait for your site to be up (defualt 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
+      - `chromePort: number` - chrome port for puppeteer to use
+      - `chromePath: string` - chrome path for puppeteer to use
+      - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
+- `DELETE /v1/audits/:auditId` - delete an audit
+
+#### Websites
+
+- `GET /v1/websites` - list of audits grouped by url
+- `GET /v1/websites/:websiteUrl` - get the audits associated with this url. _be sure to uri encode that url!_
+- `GET /v1/audits/:auditId/website` - get the group of audits associated with the url used for this audit.
+
+### Programatic
+
+All of the API methods exposed on REST are also exposed programatically.
+
+#### Server
+
+- `startServer(options?, conn?)` - start REST server
+- `getApp(options?, conn?)` - return express app, ready to be started
+
+#### Audits
+
+- `getAudits(conn, listOptions?)` - list of all audits run
+  - listOptions (all optional):
+    - `limit` and `offset` for pagination
+    - `where: SQLStatement` - using [sql-template-strings](https://www.npmjs.com/package/sql-template-strings), create a custom `WHERE` to inject into the query.
+- `getAudit(conn, auditId)` - retrieve an Audit by id.
+- `triggerAudit(conn, url, options?)` - trigger a new audit.
+  - options (all optional):
+    - `awaitAuditCompleted: boolean` - makes awaiting `triggerAudit` wait until the audit has completed. By default, the audit runs in the background.
+    - `upTimeout: number` - time in ms to wait for your site to be up (defualt 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
+    - `chromePort: number` - chrome port for puppeteer to use
+    - `chromePath: string` - chrome path for puppeteer to use
+    - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
+- `deleteAudit(conn, auditId)` - delete an Audit from the DB.
+- `Audit` - class used by the Audit API.
+  - properties:
+    - `url: string`: the original url when the audit was requested
+    - `status: string`: the status of the audit; `COMPLETED`, `FAILED`, or `RUNNING`
+    - `timeCreated: string`: ISO-8601 time when the audit was created
+    - `timeCompleted: string?`: nullable ISO 8601 time when the audit was completed, if it has completed
+    - `report: LHR?`: nullable [LHR](https://github.com/GoogleChrome/lighthouse/blob/master/docs/understanding-results.md#lighthouse-result-object-lhr) object which contains the full Lighthouse audit.
+      - rendering the HTML for an LHR [can be done programatically by the Lighthouse package](). The lighthouse-audit-service REST API does this automatically.
+    - `categories: LHRCategories`: nullable map of categories, stripped down to only include the scores. useful for lists of audits, when trying to keep the payload to a reasonable size.
+
+#### Websites
+
+- `getWebsites(conn, listOptions?)` - list of audits grouped by url
+  - listOptions (all optional):
+    - `limit` and `offset` for pagination
+    - `where: SQLStatement` - using [sql-template-strings](https://www.npmjs.com/package/sql-template-strings), create a custom `WHERE` to inject into the query.
+- `getWebsiteByAuditId(conn, auditId)` - get Website associated with this audit.
+- `getWebsiteByUrl()` - get Website associated with this url.
+- `Website` - class used by the Website API.
+  - properties:
+    - `url: string`: the audited url
+    - `audits: Audit[]`: list of Audits for that URL.
+
+## Contributing
+
+See our [Contributing Guidelines](./CONTRIBUTING.md).

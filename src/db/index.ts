@@ -7,11 +7,6 @@ import logger from '../logger';
 
 export type DbConnectionType = Client | Pool;
 
-const pool = new Pool();
-export function getDbConnection(): DbConnectionType {
-  return pool;
-}
-
 export async function runDbMigrations(conn: DbConnectionType): Promise<void> {
   logger.info('running db migrations...');
   const files = fs.readdirSync(path.join(__dirname, 'migrations')).sort();

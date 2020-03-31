@@ -9,7 +9,7 @@ import { DbConnectionType } from '../../db';
 import { InvalidRequestError } from '../../errors';
 import { listResponseFactory } from '../listHelpers';
 
-const DEFAULT_UP_TIMEOUT = 180000;
+const DEFAULT_UP_TIMEOUT = 30000;
 const DEFAULT_CHROME_PORT = 9222;
 const DEFAULT_CHROME_PATH = process.env.CHROME_PATH;
 
