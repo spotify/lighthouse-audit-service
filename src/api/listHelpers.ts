@@ -1,6 +1,7 @@
+import SQL, { SQLStatement } from 'sql-template-strings';
+
 import { DbConnectionType } from '../db';
 import { InvalidRequestError } from '../errors';
-import SQL, { SQLStatement } from 'sql-template-strings';
 
 export interface ListRequest {
   limit?: number;

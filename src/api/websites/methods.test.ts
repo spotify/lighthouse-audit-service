@@ -34,7 +34,7 @@ describe('audit methods', () => {
     beforeEach(() => {
       website = Website.build({
         url: 'https://spotify.com',
-        audits: [Audit.buildForUrl('https://spotify.com').listItem],
+        audits: [Audit.buildForUrl('https://spotify.com')],
       });
       db.retrieveWebsiteByUrl.mockResolvedValueOnce(website);
     });
@@ -54,7 +54,7 @@ describe('audit methods', () => {
       audit = Audit.buildForUrl('https://spotify.com');
       website = Website.build({
         url: 'https://spotify.com',
-        audits: [audit.listItem],
+        audits: [audit],
       });
       db.retrieveWebsiteByAuditId.mockResolvedValueOnce(website);
     });
@@ -72,7 +72,7 @@ describe('audit methods', () => {
     beforeEach(() => {
       website = Website.build({
         url: 'https://spotify.com',
-        audits: [Audit.buildForUrl('https://spotify.com').listItem],
+        audits: [Audit.buildForUrl('https://spotify.com')],
       });
       db.retrieveWebsiteList.mockResolvedValueOnce([website]);
       db.retrieveWebsiteTotal.mockResolvedValueOnce(1);

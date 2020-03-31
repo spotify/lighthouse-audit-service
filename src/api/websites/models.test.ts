@@ -39,17 +39,17 @@ describe('website models', () => {
           id: uuid(),
           url,
           timeCreated: new Date('2020-03-01T00:00:00.000Z'),
-        }).listItem,
+        }),
         Audit.build({
           id: uuid(),
           url,
           timeCreated: new Date('2020-02-01T00:00:00.000Z'),
-        }).listItem,
+        }),
         Audit.build({
           id: uuid(),
           url,
           timeCreated: new Date('2020-01-01T00:00:00.000Z'),
-        }).listItem,
+        }),
       ];
       const website = Website.build({ url, audits });
       expect(website.lastAudit).toBe(audits[0]);

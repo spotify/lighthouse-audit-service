@@ -5,31 +5,34 @@ import express, {
   Response,
   NextFunction,
 } from 'express';
-import cors from 'cors';
+import corsMiddleware from 'cors';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import expressPromiseRouter from 'express-promise-router';
 import morgan from 'morgan';
 import { Server } from 'http';
-import { Pool } from 'pg';
+import { Pool, ConnectionConfig } from 'pg';
 
 import logger from '../logger';
 import { runDbMigrations, awaitDbConnection, DbConnectionType } from '../db';
-import { bindRoutes as bindAuditRoutes } from '../api/audits';
-import { bindRoutes as bindWebsiteRoutes } from '../api/websites';
+import { bindRoutes as bindAuditRoutes } from '../api/audits/routes';
+import { bindRoutes as bindWebsiteRoutes } from '../api/websites/routes';
 import { StatusCodeError } from '../errors';
 
 const DEFAULT_PORT = 3003;
-const DEFAULT_CORS = true;
 
 export interface LighthouseAuditServiceOptions {
   port?: number;
-  useCors?: boolean;
+  cors?: boolean;
+  postgresConfig?: ConnectionConfig;
 }
 
-function configureMiddleware(app: Application, useCors: boolean) {
-  if (useCors) {
-    app.use(cors());
+function configureMiddleware(
+  app: Application,
+  options: LighthouseAuditServiceOptions,
+) {
+  if (options.cors) {
+    app.use(corsMiddleware());
   }
   app.use(compression());
   app.use(bodyParser.json());
@@ -59,16 +62,18 @@ function configureRoutes(router: Router, conn: DbConnectionType) {
 }
 
 export async function getApp(
-  conn: DbConnectionType = new Pool(),
-  useCors: boolean = DEFAULT_CORS,
+  options: LighthouseAuditServiceOptions = {},
+  providedConn?: DbConnectionType,
 ): Promise<Application> {
   logger.debug('building express app...');
+  const conn = providedConn || new Pool(options.postgresConfig);
 
   await awaitDbConnection(conn);
   await runDbMigrations(conn);
 
   const app = express();
-  configureMiddleware(app, useCors);
+  app.set('connection', conn);
+  configureMiddleware(app, options);
 
   const router = expressPromiseRouter();
   configureRoutes(router, conn);
@@ -79,12 +84,13 @@ export async function getApp(
   return app;
 }
 
-export default async function startServer({
-  port = DEFAULT_PORT,
-  useCors = DEFAULT_CORS,
-}: LighthouseAuditServiceOptions = {}): Promise<Server> {
-  const conn = new Pool();
-  const app = await getApp(conn, useCors);
+export async function startServer(
+  options: LighthouseAuditServiceOptions = {},
+  providedConn?: DbConnectionType,
+): Promise<Server> {
+  const { port = DEFAULT_PORT } = options;
+  const conn = providedConn || new Pool(options.postgresConfig);
+  const app = await getApp(options, conn);
 
   logger.debug('starting application server...');
   return await new Promise((resolve, reject) => {
