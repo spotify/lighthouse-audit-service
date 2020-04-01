@@ -1,1 +1,3 @@
-module.exports = require('@spotify/web-scripts/config/eslintrc.js');
+module.exports = {
+  extends: ['@spotify' /*, '@spotify/eslint-config-oss'*/],
+};

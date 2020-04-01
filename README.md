@@ -178,7 +178,11 @@ All of the API methods exposed on REST are also exposed programatically.
 
 ## Community
 
-See our [Code of Conduct](./CODE_OF_CONDUCT.md). Contributions are welcome!
+This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
+
+[code-of-conduct]: https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md
+
+Contributions are welcome!
 
 ## License
 
