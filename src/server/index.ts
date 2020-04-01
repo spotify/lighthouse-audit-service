@@ -65,6 +65,7 @@ function configureMiddleware(
 export function configureErrorMiddleware(app: Application) {
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof StatusCodeError) res.status(err.statusCode);
+    else res.status(500);
     res.send(err.message);
   });
 }
