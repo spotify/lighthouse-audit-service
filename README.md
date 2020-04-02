@@ -7,7 +7,21 @@ A service meant to help you run, schedule, store, and monitor Lighthouse reports
 
 ## Usage
 
-### As a library
+### With Docker
+
+The simplest way to deploy the app is with [our image on Docker Hub](https://hub.docker.com/r/spotify/lighthouse-audit-service).
+
+```sh
+docker run spotify/lighthouse-audit-service:latest
+```
+
+Be sure to see "Configuring Postgres" - you will likely need to configure the Postgres credentials, even when trying the app out locally. A list of supported environment variables:
+
+- `LAS_PORT`: which port to run the service on
+- `LAS_CORS`: if true, enables the [cors express middleware](https://expressjs.com/en/resources/middleware/cors.html).
+- all [environment variables from pg](https://node-postgres.com/features/connecting#Environment%20variables), which should be used to set credentials for accessing the db.
+
+### As an npm package
 
 Install the project:
 
