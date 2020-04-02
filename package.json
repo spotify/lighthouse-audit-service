@@ -29,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "@spotify/eslint-config-oss": "^1.0.0",
     "@spotify/web-scripts": "^6.1.0",
     "@types/async-retry": "^1.4.1",
     "@types/compression": "^1.7.0",

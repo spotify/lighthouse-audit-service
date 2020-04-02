@@ -805,6 +805,13 @@
   resolved "https://registry.yarnpkg.com/@spotify/eslint-config-base/-/eslint-config-base-6.1.0.tgz#b48d2764049d56a7d83a95709ec1e6733cb19f2a"
   integrity sha512-oxR3OBBrms09Ih6yPrqcaeKgwchdw9XgRvKsF6x6uPiMy0OVYald/+GkBtyQy+IChD14WStV/XosqNxEZeTJ4Q==
 
+"@spotify/eslint-config-oss@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@spotify/eslint-config-oss/-/eslint-config-oss-1.0.0.tgz#1bcbb9047c0211c378f6e70db1e2aed57818bda6"
+  integrity sha512-c6UQRbtbRK6oSEg93UpJqG6SQ/EgPoN9ptWhQmE2NG1Y6j2E0KA+Dt9sw3M05itrSWc7CjTCjkrEz1bou4SWDA==
+  dependencies:
+    eslint-plugin-notice "^0.8.9"
+
 "@spotify/eslint-config-react@^6.0.0":
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/@spotify/eslint-config-react/-/eslint-config-react-6.0.0.tgz#9cfc88362c7ffcd14e4dde73c196d1bc8583051d"
@@ -3299,6 +3306,15 @@ eslint-plugin-jsx-a11y@^6.2.1:
     has "^1.0.3"
     jsx-ast-utils "^2.2.1"
 
+eslint-plugin-notice@^0.8.9:
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-notice/-/eslint-plugin-notice-0.8.9.tgz#b3b55ba218b36a01fd4de998f68c66a8bf238a82"
+  integrity sha512-Z6xit9Yv7pCG/rS3DohSou1BeDffPOhmuQzE7UWMxV2h/MJmsOq3QZFyXmbi18cExlyWbz4+ztAogi2edeTbjA==
+  dependencies:
+    find-root "^1.1.0"
+    lodash "^4.17.15"
+    metric-lcs "^0.1.2"
+
 eslint-plugin-react@^7.12.4:
   version "7.19.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.19.0.tgz#6d08f9673628aa69c5559d33489e855d83551666"
@@ -3786,7 +3802,7 @@ find-npm-prefix@^1.0.2:
   resolved "https://registry.yarnpkg.com/find-npm-prefix/-/find-npm-prefix-1.0.2.tgz#8d8ce2c78b3b4b9e66c8acc6a37c231eb841cfdf"
   integrity sha512-KEftzJ+H90x6pcKtdXZEPsQse8/y/UnvzRKrOSQFprnrGaFuJ62fVkP34Iu2IYuMvyauCyoLTNkJZgrrGA2wkA==
 
-find-root@1.1.0:
+find-root@1.1.0, find-root@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/find-root/-/find-root-1.1.0.tgz#abcfc8ba76f708c42a97b3d685b7e9450bfb9ce4"
   integrity sha512-NKfW6bec6GfKc0SGx1e07QZY9PE99u0Bft/0rzSD5k3sO/vwkVUpDUKVm5Gpp5Ue3YfShPFTX2070tDs5kB9Ng==
@@ -6440,6 +6456,11 @@ methods@^1.0.0, methods@^1.1.1, methods@^1.1.2, methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
   integrity sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
+
+metric-lcs@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/metric-lcs/-/metric-lcs-0.1.2.tgz#87913f149410e39c7c5a19037512814eaf155e11"
+  integrity sha512-+TZ5dUDPKPJaU/rscTzxyN8ZkX7eAVLAiQU/e+YINleXPv03SCmJShaMT1If1liTH8OcmWXZs0CmzCBRBLcMpA==
 
 micromatch@^3.0.4, micromatch@^3.1.4:
   version "3.1.10"
