@@ -18,14 +18,19 @@ ENV CHROME_PATH "google-chrome-unstable"
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
-# do this instead of COPY node_modules to
-# keep image as small as possible
+# install all dev and production dependencies
 COPY package.json /app
 COPY yarn.lock app/
-RUN yarn install --production
+RUN yarn install
 
-# yarn build must be run before building the docker container.
+# build and copy the app over
+COPY src/ /app/src
+COPY tsconfig.json /app
+RUN yarn build
 COPY cjs /app/cjs
+
+# prune out dev dependencies now that build has completed
+RUN yarn install --production
 
 ENTRYPOINT [ "yarn" ]
 CMD [ "start" ]

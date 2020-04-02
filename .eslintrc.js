@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['@spotify' /*, '@spotify/eslint-config-oss'*/],
+  extends: ['@spotify', '@spotify/eslint-config-oss'],
 };
