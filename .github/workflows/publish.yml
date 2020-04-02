@@ -21,9 +21,9 @@ jobs:
       run: yarn lint
     - name: test
       run: yarn test
-    # - name: release
-    #   run: yarn release
-    #   env:
-    #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    #     GH_USERNAME: ${{ secrets.GH_USERNAME }}
+    - name: release
+      run: yarn release
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_USERNAME: ${{ secrets.GH_USERNAME }}
