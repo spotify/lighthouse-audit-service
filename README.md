@@ -192,3 +192,5 @@ Copyright 2020 Spotify AB.
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 
 [code-of-conduct]: https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md
+[web-scripts]: https://github.com/spotify/web-scripts
+[semantic-release]: https://github.com/semantic-release/semantic-release
