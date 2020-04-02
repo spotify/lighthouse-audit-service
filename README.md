@@ -1,5 +1,8 @@
 # Lighthouse Audit Service
 
+[![Actions Status](https://github.com/spotify/lighthouse-audit-service/workflows/Tests/badge.svg)](https://github.com/spotify/web-scripts/actions)
+[![Version](https://img.shields.io/npm/v/@spotify/lighthouse-audit-service.svg)](https://www.npmjs.com/package/@spotify/lighthouse-audit-service)
+
 A service meant to help you run, schedule, store, and monitor Lighthouse reports over time. The API is built with [Backstage](https://backstage.io) in mind, but can be used without!
 
 ## Usage
@@ -102,8 +105,6 @@ startServer({}, conn);
 
 We offer a REST API, as well as some programmatic ways, to interact with lighthouse-audits-service.
 
-_Please note that this API is subject to change prior to a 1.0.0 release. Changes will not be marked as breaking until then, as we are in the process of filling this service out with functionality and reserve the right to tweak the API and model._ We strive to avoid big changes and will communicate breaking changes in release notes.
-
 ### REST
 
 We are currently [seeking contributions](https://github.com/spotify/lighthouse-audit-service/issues/23) on documenting the API in a sustainable way (aka with Swagger/OpenAPI, preferably generated). For now, the REST API includes:
@@ -176,16 +177,18 @@ All of the API methods exposed on REST are also exposed programatically.
     - `url: string`: the audited url
     - `audits: Audit[]`: list of Audits for that URL.
 
-## Community
+## Contributing
 
 This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
 
-[code-of-conduct]: https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md
+Publish should occur on merge using [web-scripts] and [semantic-release]. Please use conventional commits to signal what the new version should be.
 
-Contributions are welcome!
+External contributions and issues are welcome!
 
 ## License
 
 Copyright 2020 Spotify AB.
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+
+[code-of-conduct]: https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md

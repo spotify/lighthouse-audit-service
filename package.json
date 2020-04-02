@@ -8,7 +8,6 @@
   },
   "license": "Apache-2.0",
   "version": "0.0.0-development",
-  "private": true,
   "main": "cjs/index.js",
   "module": "esm/index.js",
   "types": "types",
@@ -68,6 +67,9 @@
     "uuid": "^7.0.2",
     "wait-on": "^4.0.1",
     "winston": "^3.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=12"
