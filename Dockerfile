@@ -27,7 +27,6 @@ RUN yarn install
 COPY src/ /app/src
 COPY tsconfig.json /app
 RUN yarn build
-COPY cjs /app/cjs
 
 # prune out dev dependencies now that build has completed
 RUN yarn install --production
