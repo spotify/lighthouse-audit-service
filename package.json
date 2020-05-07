@@ -11,6 +11,11 @@
   "main": "cjs/index.js",
   "module": "esm/index.js",
   "types": "types",
+  "files": [
+    "types",
+    "cjs",
+    "esm"
+  ],
   "scripts": {
     "dev": "nodemon",
     "start": "node ./cjs/run.js",

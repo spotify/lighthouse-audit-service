@@ -20,6 +20,8 @@ jobs:
     - name: lint
       run: yarn lint
     - name: test
+      run: yarn build
+    - name: test
       run: yarn test
     - name: release
       run: yarn release
