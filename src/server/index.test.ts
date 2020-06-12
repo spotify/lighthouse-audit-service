@@ -36,9 +36,7 @@ describe('server exports', () => {
     });
 
     it('exposes a _ping endpoint', async () => {
-      await request(`http://localhost:${port}`)
-        .get(`/_ping`)
-        .expect(200);
+      await request(`http://localhost:${port}`).get(`/_ping`).expect(200);
     });
   });
 
