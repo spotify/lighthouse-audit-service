@@ -22,6 +22,7 @@
     "lint": "web-scripts lint",
     "test": "web-scripts test",
     "build": "web-scripts build && copyfiles --up 1 src/**/*.sql cjs && copyfiles --up 1 src/**/*.sql esm",
+    "format": "web-scripts format",
     "commit": "web-scripts commit",
     "release": "web-scripts release",
     "prepare": "web-scripts audit"
@@ -34,7 +35,7 @@
   },
   "devDependencies": {
     "@spotify/eslint-config-oss": "^1.0.0",
-    "@spotify/web-scripts": "^6.1.0",
+    "@spotify/web-scripts": "^7.0.0",
     "@types/async-retry": "^1.4.1",
     "@types/compression": "^1.7.0",
     "@types/cors": "^2.8.6",

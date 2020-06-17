@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import SQL, { SQLStatement } from 'sql-template-strings';
+import { Query } from 'express-serve-static-core';
 
 import { DbConnectionType } from '../db';
 import { InvalidRequestError } from '../errors';
@@ -58,7 +59,7 @@ export function listResponseFactory<Item>(
 }
 
 export function listOptionsFromQuery(
-  query: Record<string, string>,
+  query: Query,
   defaultLimit = 25,
   defaultOffset = 0,
 ): ListRequest {
