@@ -89,7 +89,7 @@ PGDATABASE=mydb \
 PGPORT=3211 yarn start
 ```
 
-..or, by [passing the config in programatically](https://node-postgres.com/features/connecting#Programmatic) as `postgresConfig`:
+..or, by [passing the config in programmatically](https://node-postgres.com/features/connecting#Programmatic) as `postgresConfig`:
 
 ```js
 import { startServer } from '@spotify/lighthouse-audit-service';
@@ -132,7 +132,7 @@ We are currently [seeking contributions](https://github.com/spotify/lighthouse-a
     - `url: string` - url to audit
     - `options` - all optional
       - `awaitAuditCompleted: boolean` - makes awaiting `triggerAudit` wait until the audit has completed. By default, the audit runs in the background.
-      - `upTimeout: number` - time in ms to wait for your site to be up (defualt 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
+      - `upTimeout: number` - time in ms to wait for your site to be up (default 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
       - `chromePort: number` - chrome port for puppeteer to use
       - `chromePath: string` - chrome path for puppeteer to use
       - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
@@ -146,7 +146,7 @@ We are currently [seeking contributions](https://github.com/spotify/lighthouse-a
 
 ### Programatic
 
-All of the API methods exposed on REST are also exposed programatically.
+All of the API methods exposed on REST are also exposed programmatically.
 
 #### Server
 
@@ -163,7 +163,7 @@ All of the API methods exposed on REST are also exposed programatically.
 - `triggerAudit(conn, url, options?)` - trigger a new audit.
   - options (all optional):
     - `awaitAuditCompleted: boolean` - makes awaiting `triggerAudit` wait until the audit has completed. By default, the audit runs in the background.
-    - `upTimeout: number` - time in ms to wait for your site to be up (defualt 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
+    - `upTimeout: number` - time in ms to wait for your site to be up (default 30000). We test that your URL is reachable before triggering Lighthouse (useful if this Lighthouse test will run for an ephemeral URL).
     - `chromePort: number` - chrome port for puppeteer to use
     - `chromePath: string` - chrome path for puppeteer to use
     - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
@@ -175,7 +175,7 @@ All of the API methods exposed on REST are also exposed programatically.
     - `timeCreated: string`: ISO-8601 time when the audit was created
     - `timeCompleted: string?`: nullable ISO 8601 time when the audit was completed, if it has completed
     - `report: LHR?`: nullable [LHR](https://github.com/GoogleChrome/lighthouse/blob/master/docs/understanding-results.md#lighthouse-result-object-lhr) object which contains the full Lighthouse audit.
-      - rendering the HTML for an LHR [can be done programatically by the Lighthouse package](). The lighthouse-audit-service REST API does this automatically.
+      - rendering the HTML for an LHR [can be done programmatically by the Lighthouse package](). The lighthouse-audit-service REST API does this automatically.
     - `categories: LHRCategories`: nullable map of categories, stripped down to only include the scores. useful for lists of audits, when trying to keep the payload to a reasonable size.
 
 #### Website methods
