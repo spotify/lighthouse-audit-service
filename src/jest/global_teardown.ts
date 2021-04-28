@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { OptionalStopOptions } from 'testcontainers/dist/test-container';
+import { StopOptions } from 'testcontainers/dist/test-container';
 
 import { GlobalWithPostgres } from './global_setup';
 
 const dbGlobal: GlobalWithPostgres = global;
 
 export default async function globalTeardown(
-  options?: OptionalStopOptions,
+  options?: StopOptions,
 ): Promise<void> {
   if (dbGlobal.__POSTGRES__) {
     await dbGlobal.__POSTGRES__.stop(options);

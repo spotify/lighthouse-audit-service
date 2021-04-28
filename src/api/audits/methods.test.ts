@@ -48,11 +48,11 @@ jest.mock('puppeteer', () => ({
 
 jest.mock('wait-on', () => jest.fn().mockResolvedValue(null));
 
-const lighthouse = require.requireMock('lighthouse');
-const puppeteer = require.requireMock('puppeteer');
-const waitOn = require.requireMock('wait-on');
+const lighthouse = jest.requireMock('lighthouse');
+const puppeteer = jest.requireMock('puppeteer');
+const waitOn = jest.requireMock('wait-on');
 
-const db = require.requireMock('./db');
+const db = jest.requireMock('./db');
 
 describe('audit methods', () => {
   let conn: Pool;

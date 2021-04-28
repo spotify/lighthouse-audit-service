@@ -121,7 +121,7 @@ async function runAudit(
   let browser: puppeteer.Browser;
   try {
     logger.debug('Launching Chrome with Puppeteer ...');
-    const puppeteerOptions: puppeteer.LaunchOptions = {
+    const puppeteerOptions: puppeteer.PuppeteerNodeLaunchOptions = {
       args: [`--remote-debugging-port=${chromePort}`, '--no-sandbox'],
     };
     if (chromePath) {

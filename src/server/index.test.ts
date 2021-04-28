@@ -32,7 +32,7 @@ describe('server exports', () => {
     });
 
     afterEach(async () => {
-      await new Promise(resolve => server.close(() => resolve()));
+      await new Promise(resolve => server.close(() => resolve(true)));
     });
 
     it('exposes a _ping endpoint', async () => {
