@@ -35,7 +35,7 @@ const LIGHTHOUSE_REPORT_FIXTURE = fs
 
 jest.mock('./methods');
 
-const methods = require.requireMock('./methods');
+const methods = jest.requireMock('./methods');
 
 describe('audit routes', () => {
   let conn: Pool;

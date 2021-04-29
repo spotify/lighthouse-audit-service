@@ -22,7 +22,7 @@ import { getWebsiteByUrl, getWebsiteByAuditId, getWebsites } from './methods';
 
 jest.mock('./db');
 
-const db = require.requireMock('./db');
+const db = jest.requireMock('./db');
 
 describe('audit methods', () => {
   let conn: Pool;

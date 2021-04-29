@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Duration, TemporalUnit } from 'node-duration';
+import { Duration } from 'node-duration';
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
 import { Pool } from 'pg';
 
@@ -47,7 +47,7 @@ export default async () => {
   // So, we are forced to write the connection info to the ENV.
   process.env.PGUSER = process.env.PGPASSWORD = process.env.PGDATABASE =
     'postgres';
-  process.env.PGHOST = container.getContainerIpAddress();
+  process.env.PGHOST = container.getHost();
   process.env.PGPORT = `${container.getMappedPort(5432)}`;
 
   const conn = new Pool();
@@ -60,7 +60,8 @@ export default async () => {
 
 process.on('SIGINT', async () => {
   await globalTeardown({
-    timeout: new Duration(2, TemporalUnit.SECONDS),
+    timeout: Duration.ofSeconds(2).toMillis(),
+    removeVolumes: true,
   });
   process.exit(1);
 });
