@@ -167,6 +167,29 @@ describe('audit methods', () => {
       });
     });
 
+    describe('when using credentials in url', () => {
+      it('passes the options along to lighthouse', async () => {
+        await triggerAudit(conn, 'https://user:pass@spotify.com');
+        await wait(); // wait for background job to flush
+        expect(waitOn).toHaveBeenCalledWith(
+          expect.objectContaining({
+            auth: {
+              username: 'user',
+              password: 'pass',
+            },
+            resources: ['https-get://spotify.com/'],
+          }),
+        );
+        expect(lighthouse).toHaveBeenCalledWith(
+          'https://user:pass@spotify.com',
+          expect.objectContaining({ port: 9222 }),
+          expect.objectContaining({
+            extends: 'lighthouse:default',
+          }),
+        );
+      });
+    });
+
     describe('when using awaitAuditCompleted', () => {
       it('returns a completed audit', async () => {
         const audit = await triggerAudit(conn, 'https://spotify.com', {
