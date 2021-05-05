@@ -49,7 +49,7 @@
     "copyfiles": "^2.4.1",
     "dotenv": "^8.2.0",
     "get-port": "^5.1.1",
-    "husky": "^6.0.0",
+    "husky": "^4.0.0",
     "node-duration": "^2.0.0",
     "nodemon": "^2.0.7",
     "supertest": "^6.1.3",

@@ -105,11 +105,17 @@ async function runAudit(
 
   try {
     logger.debug('Waiting for URL to be UP ...');
-    const urlWithoutProtocol = url.replace(HTTP_RE, '');
-    const urlToWaitOn = `http-get://${urlWithoutProtocol}`;
+    const u = new URL(url);
+    // Remove the colon from the protocol
+    const protocol = u.protocol.substring(0, u.protocol.length - 1);
+    // Craft url and options according to waitOn specs
+    const urlToWaitOn = `${protocol}-get://${u.host}${u.pathname}${u.search}`;
     const waitOnOpts = {
       resources: [urlToWaitOn],
       timeout: upTimeout,
+      auth: u.username
+        ? { username: u.username, password: u.password }
+        : undefined,
     };
     await waitOn(waitOnOpts);
   } catch (err) {
