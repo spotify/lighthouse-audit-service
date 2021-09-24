@@ -64,3 +64,6 @@ typings/
 types
 esm
 cjs
+
+# typescript incremental compilation cache
+tsconfig.tsbuildinfo
