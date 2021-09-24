@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     branches:
-    - master
+      - master
 
 jobs:
   publish:
@@ -11,21 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 12.0
-    - name: yarn install
-      run: yarn
-    - name: lint
-      run: yarn lint
-    - name: build
-      run: yarn build
-    - name: test
-      run: yarn test
-    - name: release
-      run: yarn release
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        GH_USERNAME: ${{ secrets.GH_USERNAME }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.9
+      - name: yarn install
+        run: yarn
+      - name: lint
+        run: yarn lint
+      - name: build
+        run: yarn build
+      - name: test
+        run: yarn test
+      - name: release
+        run: yarn release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
