@@ -21,11 +21,17 @@ import logger from '../logger';
 import { awaitDbConnection, runDbMigrations } from '../db';
 import globalTeardown from './global_teardown';
 
+declare global {
+  namespace NodeJS {
+    interface Global {}
+  }
+}
+
 export interface GlobalWithPostgres extends NodeJS.Global {
   __POSTGRES__?: StartedTestContainer;
 }
 
-const dbGlobal: GlobalWithPostgres = global;
+const dbGlobal = globalThis as GlobalWithPostgres;
 
 export default async () => {
   const name = `las_test_container_${Math.random()

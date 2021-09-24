@@ -17,7 +17,7 @@ import { StopOptions } from 'testcontainers/dist/test-container';
 
 import { GlobalWithPostgres } from './global_setup';
 
-const dbGlobal: GlobalWithPostgres = global;
+const dbGlobal = globalThis as GlobalWithPostgres;
 
 export default async function globalTeardown(
   options?: StopOptions,
