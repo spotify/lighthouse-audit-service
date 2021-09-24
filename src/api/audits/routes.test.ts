@@ -26,8 +26,10 @@ import { Audit, AuditListItem } from './models';
 import { configureErrorMiddleware } from '../../server';
 import { InvalidRequestError } from '../../errors';
 
-const UUID_RE = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const ISO_DATETIME_RE = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
+const UUID_RE =
+  /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+const ISO_DATETIME_RE =
+  /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
 
 const LIGHTHOUSE_REPORT_FIXTURE = fs
   .readFileSync(path.join(__dirname, '__fixtures__', 'lighthouse-report.json'))

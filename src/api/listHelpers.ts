@@ -63,10 +63,8 @@ export function listOptionsFromQuery(
   defaultLimit = 25,
   defaultOffset = 0,
 ): ListRequest {
-  const {
-    limit: limitStr = defaultLimit,
-    offset: offsetStr = defaultOffset,
-  } = query;
+  const { limit: limitStr = defaultLimit, offset: offsetStr = defaultOffset } =
+    query;
   const limit = +limitStr;
   const offset = +offsetStr;
 

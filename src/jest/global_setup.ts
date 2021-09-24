@@ -45,8 +45,10 @@ export default async () => {
   // We have to use global setup because it's the only way in Jest to run code once before suite.
   // Unfortuantely Jest prevents us from writing globals that are read by the sutite.
   // So, we are forced to write the connection info to the ENV.
-  process.env.PGUSER = process.env.PGPASSWORD = process.env.PGDATABASE =
-    'postgres';
+  process.env.PGUSER =
+    process.env.PGPASSWORD =
+    process.env.PGDATABASE =
+      'postgres';
   process.env.PGHOST = container.getHost();
   process.env.PGPORT = `${container.getMappedPort(5432)}`;
 
