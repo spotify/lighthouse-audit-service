@@ -52,7 +52,7 @@ You may nest the [express app](https://expressjs.com/) that the lighthouse-audit
 
 ```js
 import express from 'express';
-import { getApp as getLighthouseAuditServerApp } from '@spotify/lighthouse-audit-server';
+import { getApp as getLighthouseAuditServerApp } from '@spotify/lighthouse-audit-service';
 
 async function startup() {
   const app = express();
