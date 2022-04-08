@@ -3,6 +3,7 @@
   "include": ["src"],
   "exclude": ["src/jest", "src/**/*.test.ts"],
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "./src/@types"]
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "skipLibCheck": true
   }
 }
