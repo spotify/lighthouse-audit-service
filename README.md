@@ -21,6 +21,35 @@ Be sure to see "Configuring Postgres" - you will likely need to configure the Po
 - `LAS_CORS`: if true, enables the [cors express middleware](https://expressjs.com/en/resources/middleware/cors.html).
 - all [environment variables from pg](https://node-postgres.com/features/connecting#Environment%20variables), which should be used to set credentials for accessing the db.
 
+#### With Docker Compose
+
+A simple way to trial this tool is with the following docker compose file which spins up a postgres container and connects it with the lighthouse image. This would not be a great way to run this in a production environment, but a fast way to test out this tool and see if it meets your needs.
+
+```yaml
+# docker-compose.yml
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: example
+  
+  lighthouse:
+    image: spotify/lighthouse-audit-service:latest
+    environment:
+      PGHOST: db
+      PGUSER: dbuser
+      PGPASSWORD: example
+      LAS_PORT: 4008
+    ports:
+      - "4008:4008"
+```
+
+
 ### As an npm package
 
 Install the project:
@@ -52,7 +81,7 @@ You may nest the [express app](https://expressjs.com/) that the lighthouse-audit
 
 ```js
 import express from 'express';
-import { getApp as getLighthouseAuditServerApp } from '@spotify/lighthouse-audit-server';
+import { getApp as getLighthouseAuditServerApp } from '@spotify/lighthouse-audit-service';
 
 async function startup() {
   const app = express();

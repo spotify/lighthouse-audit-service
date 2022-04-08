@@ -15,7 +15,7 @@
  */
 import { Router, Request, Response } from 'express';
 // @ts-ignore
-import ReportGenerator from 'lighthouse/lighthouse-core/report/report-generator';
+import ReportGenerator from 'lighthouse/report/generator/report-generator';
 
 import logger from '../../logger';
 import { DbConnectionType } from '../../db';

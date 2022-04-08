@@ -21,11 +21,17 @@ import logger from '../logger';
 import { awaitDbConnection, runDbMigrations } from '../db';
 import globalTeardown from './global_teardown';
 
+declare global {
+  namespace NodeJS {
+    interface Global {}
+  }
+}
+
 export interface GlobalWithPostgres extends NodeJS.Global {
   __POSTGRES__?: StartedTestContainer;
 }
 
-const dbGlobal: GlobalWithPostgres = global;
+const dbGlobal = globalThis as GlobalWithPostgres;
 
 export default async () => {
   const name = `las_test_container_${Math.random()
@@ -45,8 +51,10 @@ export default async () => {
   // We have to use global setup because it's the only way in Jest to run code once before suite.
   // Unfortuantely Jest prevents us from writing globals that are read by the sutite.
   // So, we are forced to write the connection info to the ENV.
-  process.env.PGUSER = process.env.PGPASSWORD = process.env.PGDATABASE =
-    'postgres';
+  process.env.PGUSER =
+    process.env.PGPASSWORD =
+    process.env.PGDATABASE =
+      'postgres';
   process.env.PGHOST = container.getHost();
   process.env.PGPORT = `${container.getMappedPort(5432)}`;
 
