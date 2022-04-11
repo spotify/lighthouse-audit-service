@@ -94,6 +94,37 @@ describe('audit routes', () => {
           expect(methods.getWebsiteByAuditId).toHaveBeenLastCalledWith(
             conn,
             audit.id,
+            { limit: 25, offset: 0 },
+            { limit: 25, offset: 0 },
+          );
+
+          expect(res.body.url).toBe('https://spotify.com');
+          expect(res.body.audits).toHaveLength(1);
+          expect(res.body.lastAudit.status).toBe('COMPLETED');
+          expect(res.body.lastAudit.timeCreated).toEqual(
+            audit.timeCreated?.toISOString(),
+          );
+          expect(res.body.lastAudit.timeCompleted).toEqual(
+            audit.timeCompleted?.toISOString(),
+          );
+          expect(res.body.lastAudit.id).toEqual(audit.id);
+        });
+    });
+
+    it('properly parses page data', async () => {
+      await request(app)
+        .get(
+          `/v1/audits/${audit.id}/website?limit=2&offset=0&audit-limit=1&audit-offset=0`,
+        )
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(res => {
+          expect(methods.getWebsiteByAuditId).toHaveBeenLastCalledWith(
+            conn,
+            audit.id,
+            { limit: 2, offset: 0 },
+            { limit: 1, offset: 0 },
           );
 
           expect(res.body.url).toBe('https://spotify.com');
@@ -135,6 +166,8 @@ describe('audit routes', () => {
           expect(methods.getWebsiteByUrl).toHaveBeenLastCalledWith(
             conn,
             'https://spotify.com',
+            { limit: 25, offset: 0 },
+            { limit: 25, offset: 0 },
           );
           expect(res.body.url).toBe('https://spotify.com');
           expect(res.body.audits).toHaveLength(1);

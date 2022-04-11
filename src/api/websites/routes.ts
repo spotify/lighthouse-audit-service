@@ -24,7 +24,12 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
   router.get(
     '/v1/audits/:auditId/website',
     async (req: Request<{ auditId: string }>, res: Response<WebsiteBody>) => {
-      const response = await getWebsiteByAuditId(conn, req.params.auditId);
+      const response = await getWebsiteByAuditId(
+        conn,
+        req.params.auditId,
+        listOptionsFromQuery(req.query),
+        listOptionsFromQuery(req.query, 'audit-'),
+      );
       res.json(response.body);
     },
   );
@@ -35,7 +40,12 @@ export function bindRoutes(router: Router, conn: DbConnectionType): void {
       req: Request<{ websiteUrl: string }>,
       res: Response<WebsiteBody>,
     ) => {
-      const response = await getWebsiteByUrl(conn, req.params.websiteUrl);
+      const response = await getWebsiteByUrl(
+        conn,
+        req.params.websiteUrl,
+        listOptionsFromQuery(req.query),
+        listOptionsFromQuery(req.query, 'audit-'),
+      );
       res.json(response.body);
     },
   );

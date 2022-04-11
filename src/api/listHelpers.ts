@@ -60,11 +60,13 @@ export function listResponseFactory<Item>(
 
 export function listOptionsFromQuery(
   query: Query,
+  prefix = '',
   defaultLimit = 25,
   defaultOffset = 0,
 ): ListRequest {
-  const { limit: limitStr = defaultLimit, offset: offsetStr = defaultOffset } =
-    query;
+  const limitStr = query[`${prefix}limit`] ?? defaultLimit;
+  const offsetStr = query[`${prefix}offset`] ?? defaultOffset;
+  // const { limit: limitStr = defaultLimit, offset: offsetStr = defaultOffset } = query;
   const limit = +limitStr;
   const offset = +offsetStr;
 

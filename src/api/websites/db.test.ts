@@ -115,6 +115,18 @@ describe('audit db methods', () => {
       expect(website.lastAudit).toBeInstanceOf(Object);
     });
 
+    it('pages properly', async () => {
+      const website = await retrieveWebsiteByAuditId(
+        conn,
+        audit.id,
+        { limit: 1, offset: 0 },
+        { limit: 1, offset: 0 },
+      );
+      expect(website.url).toBe('https://spotify.com/se');
+      expect(website.audits).toHaveLength(1);
+      expect(website.lastAudit).toBeInstanceOf(Object);
+    });
+
     describe('when url doesnt exist', () => {
       it('throws a NotFoundError', async () => {
         await expect(
@@ -198,7 +210,8 @@ describe('audit db methods', () => {
 
     describe('when no rows are in the db', () => {
       beforeEach(async () => {
-        await conn.query(SQL`DELETE FROM lighthouse_audits`);
+        await conn.query(SQL`DELETE
+                             FROM lighthouse_audits`);
       });
 
       it('returns correctly', async () => {
@@ -210,7 +223,9 @@ describe('audit db methods', () => {
 
   describe('#retrieveAuditCount', () => {
     beforeEach(async () => {
-      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+      await conn.query(SQL`DELETE
+                           FROM lighthouse_audits;
+      COMMIT;`);
 
       const first = persistAudit(
         conn,
@@ -241,7 +256,9 @@ describe('audit db methods', () => {
     });
 
     afterEach(async () => {
-      await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+      await conn.query(SQL`DELETE
+                           FROM lighthouse_audits;
+      COMMIT;`);
     });
 
     it('returns the count, properly grouped', async () => {
@@ -250,7 +267,9 @@ describe('audit db methods', () => {
 
     describe('when there are no entries', () => {
       beforeEach(async () => {
-        await conn.query(SQL`DELETE FROM lighthouse_audits; COMMIT;`);
+        await conn.query(SQL`DELETE
+                             FROM lighthouse_audits;
+        COMMIT;`);
       });
 
       it('returns zero', async () => {
