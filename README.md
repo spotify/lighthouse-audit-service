@@ -30,14 +30,13 @@ A simple way to trial this tool is with the following docker compose file which 
 version: '3.1'
 
 services:
-
   db:
     image: postgres:latest
     restart: always
     environment:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: example
-  
+
   lighthouse:
     image: spotify/lighthouse-audit-service:latest
     environment:
@@ -46,9 +45,8 @@ services:
       PGPASSWORD: example
       LAS_PORT: 4008
     ports:
-      - "4008:4008"
+      - '4008:4008'
 ```
-
 
 ### As an npm package
 
@@ -167,15 +165,24 @@ We are currently [seeking contributions](https://github.com/spotify/lighthouse-a
       - `lighthouseConfig: LighthouseConfig` - custom [Lighthouse config](https://github.com/GoogleChrome/lighthouse/blob/master/docs/configuration.md) to be used when running the audit.
 - `DELETE /v1/audits/:auditId` - delete an audit
 
+Basic pagination is available on routes which return multiple items.
+`offset` and `limit` will be recognized, defaulting to 0 and 25 respectively.
+
 #### Website routes
 
 - `GET /v1/websites` - list of audits grouped by url
 - `GET /v1/websites/:websiteUrl` - get the audits associated with this url. _be sure to uri encode that url!_
 - `GET /v1/audits/:auditId/website` - get the group of audits associated with the url used for this audit.
 
-### Programatic
+Basic pagination is available on REST routes which return multiple items.
+`offset` and `limit` will be recognized, defaulting to `0` and `25` respectively.
 
-All of the API methods exposed on REST are also exposed programmatically.
+For these website routes, an additional set of pagination is available to page the audits returned per website as well.
+`audit-offset` and `audit-limit` default to `0` and `25` respectively, and will limit the returned audit size per website response.
+
+### Programmatic
+
+All the API methods exposed on REST are also exposed programmatically.
 
 #### Server
 
