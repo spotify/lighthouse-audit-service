@@ -41,6 +41,7 @@ export interface AuditOptions {
   chromePort?: number;
   chromePath?: string;
   lighthouseConfig?: LighthouseConfig;
+  puppeteerArgs?: puppeteer.PuppeteerNodeLaunchOptions['args'];
 }
 
 /**
@@ -81,6 +82,20 @@ export async function triggerAudit(
 }
 
 /**
+ * check to see if the given list of strings includes a string that contains the given string
+ * @param list: string[]
+ * @param partialString: string
+ */
+function includesPartial(list: string[], partialString: string) {
+  for (const str of list) {
+    if (str.indexOf(partialString) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * trigger the audit, storing it as an in-progress row in the db, and running the
  * actual audit non-blocking in the background.
  * @param audit: Audit
@@ -98,6 +113,7 @@ async function runAudit(
     chromePort = DEFAULT_CHROME_PORT,
     chromePath = DEFAULT_CHROME_PATH,
     lighthouseConfig = {},
+    puppeteerArgs = [],
   } = options;
 
   const logger = parentLogger.child({ url, auditId: audit.id });
@@ -127,8 +143,14 @@ async function runAudit(
   let browser: puppeteer.Browser;
   try {
     logger.debug('Launching Chrome with Puppeteer ...');
+    if (!includesPartial(puppeteerArgs, '--remote-debugging-port')) {
+      puppeteerArgs.push(`--remote-debugging-port=${chromePort}`);
+    }
+    if (!includesPartial(puppeteerArgs, '--no-sandbox')) {
+      puppeteerArgs.push('--no-sandbox');
+    }
     const puppeteerOptions: puppeteer.PuppeteerNodeLaunchOptions = {
-      args: [`--remote-debugging-port=${chromePort}`, '--no-sandbox'],
+      args: puppeteerArgs,
     };
     if (chromePath) {
       puppeteerOptions.executablePath = chromePath;
