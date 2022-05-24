@@ -1,3 +1,19 @@
+# Repo Maintenance Notes
+
+This Repo is a fork of the [@spotify/lighthouse-audit-service](https://github.com/spotify/lighthouse-audit-service) repo.
+All of the documentation after this section is from their original repo. I just wanted to add a section quickly listing
+the branches of importance & how to use this repo.
+
+- **master** - the main branch of this repo. If you have changes that you want to be able to use in fender, put up a PR
+  against this branch like you would for any other repo & get approval and such as usual.
+- **release_branch** - this branch contains an additional commit that we don't want in master (since it adds some
+  otherwise-hidden folders to the repo) but is necessary for the fork to work in fender. The last commit on this branch
+  should always match the commit hash at the end of https://github.com/klaviyo/fender/blob/master/backend/services/server-forms-performance-test/package.json#L13.
+  Once you merge a change into master, to "release" it to fender, rebase this branch off of master and (if necessary)
+  update the commit hash in fender to match the latest one in this branch in order for your changes to be accessible.
+- **20220519_allow_user_to_pass_in_puppeteer_args** - this branch should _not_ be modified; it's currently being used
+  in a PR against the original repo; once it hopefully gets merged in, we won't need to use this forked repo anymore.
+
 # Lighthouse Audit Service
 
 [![Actions Status](https://github.com/spotify/lighthouse-audit-service/workflows/Tests/badge.svg)](https://github.com/spotify/web-scripts/actions)
@@ -30,14 +46,13 @@ A simple way to trial this tool is with the following docker compose file which 
 version: '3.1'
 
 services:
-
   db:
     image: postgres:latest
     restart: always
     environment:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: example
-  
+
   lighthouse:
     image: spotify/lighthouse-audit-service:latest
     environment:
@@ -46,9 +61,8 @@ services:
       PGPASSWORD: example
       LAS_PORT: 4008
     ports:
-      - "4008:4008"
+      - '4008:4008'
 ```
-
 
 ### As an npm package
 
