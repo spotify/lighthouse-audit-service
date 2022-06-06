@@ -127,6 +127,11 @@ describe('audit methods', () => {
           extends: 'lighthouse:default',
         }),
       );
+      expect(puppeteer.launch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: ['--remote-debugging-port=9222', '--no-sandbox'],
+        }),
+      );
     });
 
     it('persists the triggered audit', async () => {
@@ -145,6 +150,7 @@ describe('audit methods', () => {
               emulatedFormFactor: 'mobile',
             },
           },
+          puppeteerArgs: ['--incognito', '--no-sandbox'],
         });
         await wait(); // wait for background job to flush
         expect(waitOn).toHaveBeenCalledWith(
@@ -155,6 +161,11 @@ describe('audit methods', () => {
         expect(puppeteer.launch).toHaveBeenCalledWith(
           expect.objectContaining({
             executablePath: 'some/path',
+            args: [
+              '--incognito',
+              '--no-sandbox',
+              '--remote-debugging-port=1000',
+            ],
           }),
         );
         expect(lighthouse).toHaveBeenCalledWith(
