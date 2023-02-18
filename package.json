@@ -61,7 +61,7 @@
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
     "pg": "^8.7.3",
-    "puppeteer": "^13.5.2",
+    "puppeteer": "^13.7.0",
     "sql-template-strings": "^2.2.2",
     "uuid": "^8.3.2",
     "wait-on": "^6.0.1",
