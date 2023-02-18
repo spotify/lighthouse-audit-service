@@ -60,7 +60,7 @@
     "lighthouse": "^9.5.0",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
-    "pg": "^8.7.3",
+    "pg": "^8.9.0",
     "puppeteer": "^13.5.2",
     "sql-template-strings": "^2.2.2",
     "uuid": "^8.3.2",
