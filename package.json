@@ -45,7 +45,7 @@
     "get-port": "^5.1.1",
     "husky": "^7.0.4",
     "node-duration": "^2.0.0",
-    "nodemon": "^2.0.15",
+    "nodemon": "^2.0.17",
     "supertest": "^6.2.2",
     "testcontainers": "^8.6.1",
     "ts-node": "^10.7.0"
